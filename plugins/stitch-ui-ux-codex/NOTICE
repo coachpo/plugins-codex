@@ -1,0 +1,21 @@
+Stitch UI/UX for Codex
+
+Modifications Copyright 2026 coachpo.
+
+This plugin includes modified material from google-labs-code/stitch-skills:
+https://github.com/google-labs-code/stitch-skills
+
+Upstream material is Copyright 2026 Google LLC and licensed under the Apache
+License, Version 2.0. The full license is included in LICENSE.
+
+The Codex adaptation changes skill names and tool references, adds external-MCP
+and credential-safety guidance, scopes external writes, adds UI/UX quality
+gates, and makes retrieval of screenshots, HTML, DESIGN.md, and implementation
+handoff explicit. Modified files are marked by this NOTICE and UPSTREAM.md.
+
+The 2026-08-03 update optimizes the skill contracts for GPT-5.6 prompting:
+leaner instructions, contextual design decisions, bounded tool routing,
+intentional image-detail selection, and non-conflicting completion rules.
+
+This derivative plugin is not an officially supported Google product. Google
+and Stitch names remain the property of their respective owners.

@@ -1,0 +1,39 @@
+{
+  "name": "stitch-ui-ux-codex",
+  "version": "0.1.1",
+  "description": "Design, review, iterate, and retrieve UI/UX deliverables with a separately configured official Google Stitch Remote MCP.",
+  "author": {
+    "name": "coachpo",
+    "url": "https://github.com/coachpo"
+  },
+  "homepage": "https://github.com/coachpo/stitch-ui-ux-codex#readme",
+  "repository": "https://github.com/coachpo/stitch-ui-ux-codex",
+  "license": "Apache-2.0",
+  "keywords": [
+    "stitch",
+    "ui",
+    "ux",
+    "design-system",
+    "react",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Stitch UI/UX for Codex",
+    "shortDescription": "UI/UX design and design-to-code with Stitch",
+    "longDescription": "Five Codex-adapted UI/UX skills orchestrate prompt refinement, Stitch screen generation and editing, design-system extraction, multi-page iteration, and React handoff through a separately configured official Google Stitch Remote MCP. The plugin bundles skills only and does not install an MCP server or handle credentials.",
+    "developerName": "CoachPo",
+    "category": "Design",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "\u7528 Stitch \u4e3a\u8fd9\u4e2a\u4ea7\u54c1\u751f\u6210\u5e76\u8bc4\u5ba1\u4e00\u5957\u54cd\u5e94\u5f0f UI\u3002",
+      "\u5206\u6790\u8fd9\u4e2a Stitch \u9879\u76ee\u5e76\u5bfc\u51fa DESIGN.md\u3001\u622a\u56fe\u548c HTML\u3002",
+      "\u628a\u9009\u5b9a\u7684 Stitch \u5c4f\u5e55\u8f6c\u6362\u6210\u53ef\u7ef4\u62a4\u7684 React \u7ec4\u4ef6\u3002"
+    ],
+    "brandColor": "#1A73E8",
+    "websiteURL": "https://github.com/coachpo/stitch-ui-ux-codex"
+  }
+}
