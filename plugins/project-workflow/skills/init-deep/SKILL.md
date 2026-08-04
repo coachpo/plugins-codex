@@ -1,15 +1,15 @@
 ---
 name: init-deep
-description: Initialize or refresh a hierarchical AGENTS.md knowledge base for a repository. Use when Codex needs to map a codebase, preserve and improve existing AGENTS.md guidance, decide which complex or distinct subdirectories need scoped instructions, or regenerate the hierarchy with /init-deep, --create-new, or --max-depth.
+description: 为仓库初始化或刷新分层的 AGENTS.md 知识库。当 Codex 需要梳理代码库、保留并改进现有 AGENTS.md 指引、判断哪些复杂或独立子目录需要局部指令，或通过 /init-deep、--create-new、--max-depth 重新生成层级时使用。
 ---
 
 # init-deep
 
-Create a durable, evidence-backed `AGENTS.md` hierarchy: one root file plus only the child files whose subtrees need materially different guidance.
+创建可长期维护、以证据为依据的 `AGENTS.md` 层级：一个根文件，以及仅在子树确实需要不同指引时才创建的子文件。
 
-## Inputs and modes
+## 输入与模式
 
-Accept:
+接受：
 
 ```text
 /init-deep
@@ -17,137 +17,137 @@ Accept:
 /init-deep --max-depth=N
 ```
 
-- Default to **update mode**: preserve deliberate existing rules, correct stale claims, and create missing files only where warranted.
-- Treat `--create-new` as authorization to replace repository `AGENTS.md` contents after reading them. Do not delete files before replacements are ready.
-- Default `--max-depth` to `3`. Apply it to candidate child-file locations, not to evidence gathering when deeper inspection is needed.
-- Keep all writes inside the requested repository. Respect narrower user scope and higher-priority instructions.
+- 默认使用**更新模式**：保留有意设置的现有规则，修正过时事实，只在证据充分时补建缺失文件。
+- `--create-new` 授权在读取现有内容后替换仓库内的 `AGENTS.md`，但不得在替代内容就绪前删除文件。
+- `--max-depth` 默认为 `3`，只限制候选子文件的位置；若核实证据需要，可以检查更深层内容。
+- 所有写入必须位于用户指定的仓库内，并遵守更窄的用户范围和更高优先级指令。
 
-## Success criteria
+## 完成标准
 
-Finish only when:
+仅在以下条件全部满足后结束：
 
-- the repository's purpose, entry points, build and test commands, major boundaries, and project-specific constraints have evidence;
-- every existing `AGENTS.md` in scope has been read;
-- the root file is accurate and useful without generic engineering advice;
-- each child file adds subtree-specific information and does not repeat its parent;
-- commands and paths included in generated files have been verified where feasible;
-- all written files have been reread and checked for contradictions, redundancy, and stale generated metadata.
+- 仓库用途、入口、构建与测试命令、主要边界和项目特有约束都有证据；
+- 已读取范围内每个现有 `AGENTS.md`；
+- 根文件准确、实用，且不包含通用工程常识；
+- 每个子文件都只增加该子树特有的信息，不重复父级内容；
+- 在可行范围内验证写入文件中的命令和路径；
+- 已重读全部写入文件，并消除矛盾、重复和易过时的生成元数据。
 
-## Workflow
+## 工作流程
 
-Track four phases with the available planning tool when the task is nontrivial: discovery, placement, generation, validation. Keep only one phase in progress. Do not depend on a particular planning-tool name.
+任务较复杂时，用可用的计划机制跟踪“发现、放置、生成、验证”四个阶段，任一时刻只保留一个进行中阶段；不要依赖某个固定的计划工具名称。
 
-### 1. Discover the repository
+### 1. 发现仓库事实
 
-Start with a fast inventory, then deepen only where it changes the output.
+先快速盘点，再只对会影响输出的部分深入检查。
 
-#### Read durable guidance first
+#### 先读取持久指令
 
-1. Locate every `AGENTS.md` and `CLAUDE.md` in scope, excluding generated or dependency directories.
-2. Read every existing `AGENTS.md` before editing any of them, including in `--create-new` mode.
-3. Record each file's scope, non-obvious rules, commands, and explicit prohibitions.
-4. Preserve intentional instructions unless the user requests a change or repository evidence shows they are stale.
+1. 查找范围内所有 `AGENTS.md` 和 `CLAUDE.md`，排除生成目录与依赖目录。
+2. 编辑前读取每个现有 `AGENTS.md`；`--create-new` 模式也不例外。
+3. 记录每个文件的适用范围、非显然规则、命令和明确禁令。
+4. 除非用户要求修改，或仓库证据表明内容已过时，否则保留有意设置的指令。
 
-#### Build the structural map
+#### 建立结构图
 
-Measure enough to identify boundaries and hotspots:
+收集足以识别边界和热点的证据：
 
-- directories and depth;
-- source-file counts and code concentration by directory;
-- languages and package/workspace boundaries;
-- entry points, manifests, build/CI configuration, tests, and generated/vendor directories;
-- unusually large or central modules.
+- 目录及深度；
+- 各目录源文件数量和代码集中度；
+- 语言、包和工作区边界；
+- 入口、清单、构建与 CI 配置、测试、生成目录和第三方目录；
+- 异常庞大或处于核心位置的模块。
 
-Prefer repository-aware tools over broad text search:
+代码结构优先使用仓库感知工具：
 
-1. Use codebase-memory graph tools first for code discovery. If the repository is not indexed, run the available repository indexer before graph queries.
-2. Use `get_architecture` for the overview, `search_graph` for symbols and entry points, `trace_path` for callers/callees, and change/blast-radius tools when available.
-3. Use LSP symbols and references as complementary evidence when available.
-4. Use fast filesystem search for configuration, literal rules, documentation, and gaps the graph cannot answer.
-5. If neither graph nor LSP is available, inspect manifests, entry points, and representative source files; mark symbol centrality as unmeasured rather than guessing.
+1. 先用 codebase-memory 图工具；若仓库未建索引，先运行可用的仓库索引器。
+2. 用 `get_architecture` 获取概览，用 `search_graph` 查找符号和入口，用 `trace_path` 检查调用关系；可用时再用变更影响范围工具。
+3. 可用时以 LSP 符号和引用补充证据。
+4. 配置、字面规则、文档及图工具遗漏处使用快速文件系统搜索。
+5. 若图工具和 LSP 都不可用，检查清单、入口和有代表性的源文件；将符号中心性标记为“未测量”，不得猜测。
 
-Exclude `.git`, dependencies, virtual environments, caches, coverage, build outputs, and generated artifacts from scale measurements unless the repository treats them as source.
+规模测量默认排除 `.git`、依赖、虚拟环境、缓存、覆盖率、构建输出和生成产物，除非仓库明确把它们视为源代码。
 
-#### Use parallel exploration selectively
+#### 有选择地并行探索
 
-Parallelize independent discovery when subagents are available and the repository is large enough to benefit. Keep dependent work sequential and synthesize findings before writing.
+仅当子代理可用、仓库足够大且工作流相互独立时并行发现。依赖前序结果的工作保持串行；写入前先综合所有发现。
 
-Choose workstreams from actual uncertainty, for example:
+按实际不确定性选择工作流，例如：
 
-- architecture and entry points;
-- build, CI, and repository conventions;
-- tests and validation paths;
-- explicit prohibitions and deprecated patterns;
-- monorepo packages or deep, distinct domains;
-- complexity and cross-cutting hotspots.
+- 架构和入口；
+- 构建、CI 和仓库约定；
+- 测试与验证路径；
+- 明确禁令和弃用模式；
+- monorepo 包或深层独立领域；
+- 复杂度和跨模块热点。
 
-Do not spawn a fixed fleet. Use no subagents for small, obvious repositories; use a few focused workstreams for medium repositories; add package- or language-specific workstreams only for genuinely independent large-repository areas. Never exceed available concurrency, and do not delegate overlapping scans.
+小型且结构清楚的仓库不使用子代理。中型仓库只使用少量聚焦工作流；仅对确实独立的大型包或语言区域增加工作流。不得超过可用并发，不得委派重叠扫描。
 
-Give each explorer a bounded prompt:
+给探索者的提示必须有明确边界：
 
 ```text
-Goal: identify [specific evidence] for AGENTS.md.
-Scope: [directories or package].
-Use: code graph/LSP first for code structure; filesystem search for configs and literals.
-Return: verified paths, symbols or commands; project-specific rules; uncertainties.
-Do not write files. Omit generic advice.
+目标：识别 AGENTS.md 所需的[具体证据]。
+范围：[目录或包]。
+工具：代码结构优先使用代码图/LSP；配置和字面量使用文件搜索。
+返回：已核实的路径、符号或命令；项目特有规则；不确定项。
+不要写文件。省略通用建议。
 ```
 
-### 2. Decide file placement
+### 2. 决定文件位置
 
-Always create or update the root `AGENTS.md`. Add a child only when its subtree has a distinct domain, commands, architecture, risk boundary, or conventions that would otherwise make the root noisy.
+始终创建或更新根 `AGENTS.md`。只有当某子树具有不同的领域、命令、架构、风险边界或约定，且放入根文件会增加噪声时，才添加子文件。
 
-Use this additive evidence score as a decision aid, not a quota:
+以下加分表仅用于辅助判断，不是配额：
 
-| Evidence | Points |
+| 证据 | 分值 |
 | --- | ---: |
-| More than 20 relevant files | 3 |
-| More than 5 relevant subdirectories | 2 |
-| More than 70% source-code files | 2 |
-| Own manifest or tool configuration | 1 |
-| Clear module/package boundary | 2 |
-| More than 30 meaningful symbols | 2 |
-| More than 10 public exports | 2 |
-| More than 20 inbound references or equivalent centrality | 3 |
+| 相关文件超过 20 个 | 3 |
+| 相关子目录超过 5 个 | 2 |
+| 源代码文件占比超过 70% | 2 |
+| 有独立清单或工具配置 | 1 |
+| 有明确模块或包边界 | 2 |
+| 有意义的符号超过 30 个 | 2 |
+| 公共导出超过 10 个 | 2 |
+| 入站引用或同等中心性超过 20 | 3 |
 
-Apply these rules:
+决策规则：
 
-- Score `16+`: create a child unless the parent already covers it cleanly.
-- Score `8–15`: create only for a genuinely distinct domain or local workflow.
-- Score below `8`: keep guidance in the nearest parent.
-- Do not create child files merely to mirror the directory tree.
-- Prefer the shallowest file that scopes an instruction correctly.
-- Keep candidates within `--max-depth`.
+- `16+` 分：除非父文件已经能简洁覆盖，否则创建子文件。
+- `8–15` 分：仅在领域或局部工作流确实独立时创建。
+- 低于 `8` 分：把指引放在最近的父文件。
+- 不得仅为复刻目录树而创建子文件。
+- 指令应放在能够准确限定其作用域的最浅层文件。
+- 候选位置不得超过 `--max-depth`。
 
-Record the decision before writing:
+写入前记录决定：
 
 ```text
 AGENTS_LOCATIONS =
-- . — root
-- packages/api — score 14; distinct service commands and API constraints
+- . — 根目录
+- packages/api — 14 分；服务命令和 API 约束独立
 
 SKIPPED =
-- src/utils — score 7; parent guidance is sufficient
+- src/utils — 7 分；父级指引已经足够
 ```
 
-### 3. Generate or update files
+### 3. 生成或更新文件
 
-Write the root first so child files can be deduplicated against it. Then write independent child files in parallel when safe.
+先写根文件，以便子文件相对根文件去重；随后可在安全时并行写入相互独立的子文件。
 
-Edit existing files in place. Create only missing files. In `--create-new` mode, replace each file only after its new content is ready; do not perform a broad pre-emptive deletion.
+原地编辑现有文件，只创建缺失文件。`--create-new` 模式下也要先准备替代内容，再逐个替换，不得预先批量删除。
 
-#### Root content
+#### 根文件内容
 
-Include only sections supported by repository evidence:
+只包含有仓库证据支持的章节：
 
 ````markdown
 # PROJECT KNOWLEDGE BASE
 
 ## OVERVIEW
-<!-- Purpose and core stack in 1–3 sentences. -->
+<!-- 用 1–3 句话说明用途和核心技术栈。 -->
 
 ## STRUCTURE
-<!-- Only non-obvious directories and boundaries. -->
+<!-- 只列出非显然的目录与边界。 -->
 
 ## WHERE TO LOOK
 | Task | Location | Notes |
@@ -158,67 +158,67 @@ Include only sections supported by repository evidence:
 | --- | --- | --- | --- |
 
 ## CONVENTIONS
-<!-- Repository-specific deviations and durable rules. -->
+<!-- 仓库特有的差异与持久规则。 -->
 
 ## ANTI-PATTERNS
-<!-- Explicitly forbidden or demonstrably harmful patterns in this repo. -->
+<!-- 本仓库明确禁止或证据表明有害的模式。 -->
 
 ## COMMANDS
 ```bash
-# Verified development, test, lint, and build commands only.
+# 仅放已验证的开发、测试、lint 和构建命令。
 ```
 
 ## NOTES
-<!-- Non-obvious operational or architectural gotchas. -->
+<!-- 非显然的运行或架构注意事项。 -->
 ````
 
-Omit empty sections. Do not add timestamps, branches, or commit hashes that become stale immediately. Prefer roughly 40–120 lines, but never pad or remove necessary evidence to hit a line count.
+省略空章节。不得加入会迅速过时的时间戳、分支名或提交哈希。通常控制在约 40–120 行，但不得为凑行数填充内容或删除必要证据。
 
-#### Child content
+#### 子文件内容
 
-Keep each child scoped to its directory. Prefer roughly 20–60 lines and include only useful local sections:
+每个子文件只适用于其所在目录，通常约 20–60 行，只保留有用的局部章节：
 
-- one-line overview;
-- local structure when navigation is non-obvious;
-- task-to-location table;
-- conventions that differ from or refine the parent;
-- local anti-patterns, commands, or validation rules.
+- 一行概述；
+- 导航不直观时的局部结构；
+- 任务到位置的映射表；
+- 不同于或细化父级的约定；
+- 局部反模式、命令或验证规则。
 
-Do not repeat root commands, repository-wide conventions, or obvious filenames. Assume the parent applies.
+不得重复根级命令、仓库级约定或显然的文件名；默认父级指令继续适用。
 
-### 4. Validate the hierarchy
+### 4. 验证层级
 
-Reread every written file and verify:
+重读每个写入文件并检查：
 
-1. **Accuracy:** paths, symbols, and commands exist; factual claims are grounded.
-2. **Scope:** each instruction lives at the shallowest correct level.
-3. **Deduplication:** child content does not restate parent content.
-4. **Actionability:** guidance answers where to look, what differs, what to run, or what to avoid.
-5. **Durability:** remove generic advice, transient status, inventories likely to churn, and speculative claims.
-6. **Consistency:** resolve contradictions across the hierarchy and with higher-priority instructions.
-7. **Size:** trim repetition and low-value detail; do not enforce line targets mechanically.
+1. **准确性：** 路径、符号和命令存在，事实陈述有依据。
+2. **作用域：** 每条指令位于能够准确限定范围的最浅层。
+3. **去重：** 子文件不复述父文件。
+4. **可执行性：** 指引能回答去哪里找、哪里不同、运行什么或避免什么。
+5. **耐久性：** 删除通用建议、瞬时状态、容易变动的清单和推测。
+6. **一致性：** 解决层级内部及其与更高优先级指令之间的冲突。
+7. **篇幅：** 删除重复和低价值细节，不机械执行行数目标。
 
-Run the cheapest relevant verification for commands included in the files, such as help/list modes, targeted tests, or configuration parsing. Do not run destructive, external, or costly commands merely to verify documentation. If a claim cannot be verified, omit it or label the uncertainty in the final report rather than encoding it as fact.
+对写入文件中的命令执行成本最低且相关的验证，例如帮助或列表模式、定向测试、配置解析。不得仅为验证文档而运行破坏性、外部或高成本命令。无法核实的事实应从文件中省略；若影响重大，在最终报告中标记为未验证，不得写成事实。
 
-## Final report
+## 最终报告
 
-Lead with completion and evidence:
+先报告完成结果和证据：
 
 ```text
-=== init-deep complete ===
-Mode: update | create-new
+=== init-deep 完成 ===
+模式：update | create-new
 
-Created:
+已创建：
 - ./AGENTS.md
 - packages/api/AGENTS.md
 
-Updated:
+已更新：
 - apps/web/AGENTS.md
 
-Analyzed: N relevant files across N directories
-Validation: [checks run and results]
-Skipped candidates: [path and brief reason]
-Unverified: [only material gaps, or none]
+分析范围：N 个目录中的 N 个相关文件
+验证：[执行的检查及结果]
+跳过的候选：[路径和简要原因]
+未验证：[仅列重要缺口；没有则写“无”]
 ```
 
-Report created and updated files separately. Include a compact hierarchy when more than one file exists.
+分别列出创建和更新的文件。文件超过一个时，附上紧凑的层级结构。

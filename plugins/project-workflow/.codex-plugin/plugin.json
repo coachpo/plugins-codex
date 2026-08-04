@@ -1,7 +1,7 @@
 {
   "name": "project-workflow",
-  "version": "0.1.0",
-  "description": "Initialize repository guidance, maintain project documentation, and turn accepted decisions into executable goals.",
+  "version": "0.1.0+codex.20260804075416",
+  "description": "\u521d\u59cb\u5316\u4ed3\u5e93\u6307\u5f15\u3001\u7ef4\u62a4\u9879\u76ee\u6587\u6863\uff0c\u5e76\u628a\u5df2\u63a5\u53d7\u7684\u51b3\u5b9a\u6574\u7406\u4e3a\u53ef\u6267\u884c\u76ee\u6807\u3002",
   "author": {
     "name": "CoachPo",
     "url": "https://github.com/coachpo"
@@ -10,15 +10,18 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Project Workflow",
-    "shortDescription": "Repository knowledge, docs, and consensus goals",
-    "longDescription": "Build a scoped AGENTS.md hierarchy, standardize evidence-backed project documentation, and turn accepted discussion decisions into drafted or persistent goals.",
+    "shortDescription": "\u4ed3\u5e93\u77e5\u8bc6\u3001\u9879\u76ee\u6587\u6863\u4e0e\u5171\u8bc6\u76ee\u6807\u5de5\u4f5c\u6d41",
+    "longDescription": "\u57fa\u4e8e\u8bc1\u636e\u5efa\u7acb\u4f5c\u7528\u57df\u660e\u786e\u7684 AGENTS.md \u5c42\u7ea7\uff0c\u6807\u51c6\u5316\u9879\u76ee\u6587\u6863\uff0c\u5e76\u628a\u8ba8\u8bba\u4e2d\u5df2\u63a5\u53d7\u7684\u51b3\u5b9a\u6574\u7406\u4e3a GOAL \u8349\u7a3f\u6216\u6301\u4e45\u76ee\u6807\u3002",
     "developerName": "CoachPo",
     "category": "Productivity",
-    "capabilities": ["Interactive", "Write"],
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
     "defaultPrompt": [
-      "使用 $project-workflow:init-deep 初始化或更新当前仓库的 AGENTS.md 层级。",
-      "使用 $project-workflow:write-project-docs 维护当前项目的中文核心文档。",
-      "使用 $project-workflow:start-consensus-goal 将当前共识整理成 GOAL 并启动。"
+      "\u4f7f\u7528 $project-workflow:init-deep \u57fa\u4e8e\u4ed3\u5e93\u8bc1\u636e\u521d\u59cb\u5316\u6216\u66f4\u65b0\u5f53\u524d\u4ed3\u5e93\u7684 AGENTS.md \u5c42\u7ea7\u3002",
+      "\u4f7f\u7528 $project-workflow:write-project-docs \u57fa\u4e8e\u4ed3\u5e93\u8bc1\u636e\u7ef4\u62a4\u5f53\u524d\u9879\u76ee\u7684\u4e2d\u6587\u6838\u5fc3\u6587\u6863\u3002",
+      "\u4f7f\u7528 $project-workflow:start-consensus-goal \u5c06\u5f53\u524d\u5171\u8bc6\u6574\u7406\u4e3a\u53ef\u9a8c\u8bc1\u7684\u4e2d\u6587 GOAL\uff0c\u5e76\u7acb\u5373\u542f\u52a8\u6301\u7eed\u6267\u884c\u3002"
     ]
   }
 }

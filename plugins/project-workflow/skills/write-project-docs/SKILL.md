@@ -1,154 +1,154 @@
 ---
 name: write-project-docs
-description: Inspect a codebase and create, maintain, consolidate, standardize, or migrate its fixed Simplified-Chinese project documentation set. Support one Chinese or English canonical filename for each product, architecture, development-rules, and source-size authority. Use for new-project documentation, repository documentation audits, canonical filename alignment, architecture and project-specific development-rule consolidation, shared Coding Agent source-size governance, or repair of the managed documentation block in an existing root AGENTS.md. Preserve useful specialized documentation; perform ADR work only when explicitly requested. Modify project documentation and the narrowly managed root AGENTS.md block only.
+description: 检查代码库并创建、维护、归并、标准化或迁移固定的简体中文项目文档集合。产品、架构、开发规范和源代码规模四类权威文档分别支持一个中文或英文 canonical 文件名。适用于新项目文档、仓库文档审查、canonical 文件名对齐、架构及项目特有开发规则归并、Coding Agent 通用源代码规模治理，或修复现有根 AGENTS.md 的托管文档区块。保留有价值的专项文档；仅在用户明确要求时处理 ADR。只修改项目文档和根 AGENTS.md 中狭义托管的区块。
 ---
 
 # Write Project Documentation
 
-Create and maintain a concise, fact-based Simplified-Chinese documentation set. Treat the eight canonical documents, their authority boundaries, and their allowed Chinese or English paths as the global convention for every project that uses the skill; do not add project profiles or project-name branches. Treat the selected development-rules path as the engineering-rules entry point and authority for verified project- and technology-specific implementation rules. Treat the selected source-size-rules path as its physically separate, project-agnostic specialized policy. Treat an existing project-root `AGENTS.md` as an instruction and navigation surface, not as a ninth canonical document.
+创建和维护简洁、以事实为依据的简体中文文档集合。八个 canonical 文档、各自权威边界及允许的中英文路径，是使用本技能的所有项目共享的约定；不得增加项目 profile 或按项目名分支。选定的开发规范路径是工程规则入口，也是已核实的项目和技术实现规则的权威来源；选定的源代码规模规则路径是物理独立、与项目无关的专项策略。项目根目录已有的 `AGENTS.md` 是指令和导航界面，不是第九个 canonical 文档。
 
-## Non-negotiable Rules
+## 不可变约束
 
-- Modify project documentation and, only when it already exists as a regular non-symlink file, the managed documentation block in the project-root `AGENTS.md`. Do not create `AGENTS.md`. Do not modify nested `AGENTS.md` files or other instruction files by default.
-- Read all applicable instruction files before editing. Treat `AGENTS.md` as instructions and navigation rather than a second authority for product facts, architecture, or development rules. Preserve every instruction outside the managed documentation block except unambiguous canonical-path substitutions in the project-root file.
-- Obey higher-priority instructions that prohibit or constrain modification of `AGENTS.md`. When the root file cannot be safely updated, leave it unchanged and report the exact stale or missing navigation.
-- Establish project facts from the user's instructions or repository evidence. Do not invent commands, features, architecture, status, owners, plans, environments, users, or data.
-- Treat absence of evidence as unknown rather than a negative fact. Missing deployment configuration, persistence code, user records, or compatibility policy does not by itself prove that the project is undeployed, has no external users, has no non-discardable data, or has no compatibility commitments.
-- Treat the bundled shared assets as user-approved normative policy, not as facts inferred from the repository. Replace only their declared canonical-path template variables; preserve all other bytes.
-- Write explanatory prose in Simplified Chinese. Preserve code identifiers, commands, paths, configuration keys, and official product names in their original form.
-- Omit unverifiable fields and sections. Do not add placeholders, “待确认”, open questions, speculation, or missing-information reports.
-- Do not inspect, infer, request, or report human maintainers, human owners, approvers, commit-message conventions, release dates or conditions, business KPIs/SLOs, or unrecorded external environments and data unless the user explicitly requests the topic and supplies verifiable evidence. A module or data `owner` means the component that owns a responsibility, write path, or lifecycle; establish it only from verified architecture evidence.
-- Do not introduce process or administrative-management documentation merely to make the documentation set appear complete. Unless the user explicitly requests it and supplies verifiable evidence, do not add approval, reporting, meeting, scheduling, personnel-governance, release-governance, commit-management, KPI/SLO, or similar content, documents, sections, placeholders, or open questions.
-- Do not create `docs/INDEX.md`, `docs/通用工程规范.md`, or additional documents such as Runbooks, `SECURITY.md`, `LICENSE`, `CHANGELOG.md`, glossaries, test plans, or technical-design documents unless explicitly requested. Preserve existing valuable specialized documents.
-- Keep one authoritative source for each fact. Link instead of duplicating bodies or generic rules.
+- 只修改项目文档，以及项目根 `AGENTS.md` 中的托管文档区块；后者必须已存在、是普通文件且不是符号链接。不得创建 `AGENTS.md`，默认不得修改嵌套 `AGENTS.md` 或其他指令文件。
+- 编辑前读取所有适用的指令文件。把 `AGENTS.md` 视为指令与导航，不得作为产品事实、架构或开发规则的第二权威来源。除根文件中明确无歧义的 canonical 路径替换外，保留托管区块之外的所有指令。
+- 遵守禁止或限制修改 `AGENTS.md` 的更高优先级指令。无法安全更新根文件时保持不变，并准确报告过时或缺失的导航。
+- 项目事实必须来自用户指令或仓库证据。不得虚构命令、功能、架构、状态、owner、计划、环境、用户或数据。
+- 没有证据表示“未知”，不表示否定事实。缺少部署配置、持久化代码、用户记录或兼容策略，本身不能证明项目未部署、没有外部用户、没有不可丢弃数据或没有兼容承诺。
+- 捆绑的共享 asset 是用户批准的规范策略，不是从仓库推断的事实。只替换已声明的 canonical 路径模板变量，其余字节保持不变。
+- 说明性正文使用简体中文；代码标识符、命令、路径、配置键和正式产品名保留原文。
+- 省略无法核实的字段和章节。不得加入占位符、“待确认”、开放问题、推测或缺失信息报告。
+- 除非用户明确要求且提供可验证证据，不得检查、推断、询问或报告人员维护者、人员 owner、审批者、提交消息约定、发布日期或条件、业务 KPI/SLO、未记录的外部环境与数据。模块或数据 `owner` 仅指拥有职责、写入路径或生命周期的组件，并且必须有架构证据。
+- 不得为了显得完整而引入流程或行政管理文档。除非用户明确要求且提供证据，不得新增审批、汇报、会议、排期、人员治理、发布治理、提交管理、KPI/SLO 等内容、文档、章节、占位符或开放问题。
+- 除非用户明确要求，不得创建 `docs/INDEX.md`、`docs/通用工程规范.md`，也不得新增 Runbooks、`SECURITY.md`、`LICENSE`、`CHANGELOG.md`、术语表、测试计划或技术设计文档。保留现有且有价值的专项文档。
+- 每项事实只保留一个权威来源；用链接代替复制正文或通用规则。
 
-## Canonical Documentation Set
+## Canonical 文档集合
 
-Use these paths and authority boundaries:
+使用以下路径和权威边界：
 
-| Path | Authority |
+| 路径 | 权威范围 |
 | --- | --- |
-| `README.md` | Project entry point, concise description, verified commands, status summary, and links. |
-| `STATUS.md` | Current lifecycle, deployment, user/data, compatibility, and allowed-change facts. |
-| `CONTRIBUTING.md` | Project-specific setup and commands plus the rendered shared contribution block. |
-| `docs/README.md` | Documentation index and authority map only. |
-| `docs/产品说明.md` or `docs/product.md` | Product problem, users, goals, scope, flows, requirements, and acceptance facts. |
-| `docs/架构说明.md` or `docs/architecture.md` | Sole architecture authority: current design, module/data owners, boundaries, dependency directions, risks, and concrete architecture or security exceptions. |
-| `docs/开发规范.md` or `docs/development-rules.md` | Engineering-rules entry point and authoritative home for verified project- and technology-specific implementation rules; must link to the source-size specialized policy. |
-| `docs/源代码规模与职责规则.md` or `docs/source-code-size-and-responsibility-rules.md` | Physically separate, project- and technology-agnostic source-size and responsibility policy subordinate to the development-rules entry point and rendered from the bundled asset. |
+| `README.md` | 项目入口、简要说明、已验证命令、状态摘要和链接。 |
+| `STATUS.md` | 当前生命周期、部署、用户与数据、兼容性和允许变更的事实。 |
+| `CONTRIBUTING.md` | 项目特有的环境与命令，以及渲染后的共享贡献区块。 |
+| `docs/README.md` | 仅作为文档索引和权威映射。 |
+| `docs/产品说明.md` 或 `docs/product.md` | 产品问题、用户、目标、范围、流程、需求和验收事实。 |
+| `docs/架构说明.md` 或 `docs/architecture.md` | 唯一架构权威：当前设计、模块与数据 owner、边界、依赖方向、风险及具体架构或安全例外。 |
+| `docs/开发规范.md` 或 `docs/development-rules.md` | 工程规则入口，以及已核实的项目与技术实现规则的权威来源；必须链接源代码规模专项策略。 |
+| `docs/源代码规模与职责规则.md` 或 `docs/source-code-size-and-responsibility-rules.md` | 由捆绑 asset 渲染、物理独立、与项目及技术无关，并从属于开发规范入口的规模与职责策略。 |
 
-Select paths independently for the four bilingual authorities:
+四类双语权威路径应独立选择：
 
-- Preserve the one existing Chinese or English path when exactly one variant exists.
-- When neither variant exists, create the Chinese path unless the user explicitly requests the English path.
-- Never keep both variants for the same authority. Do not use redirects, symlinks, or duplicated bodies to expose both names.
-- Keep explanatory prose in Simplified Chinese even when the selected filename is English.
+- 仅存在一个中文或英文变体时，沿用该路径。
+- 两个变体都不存在时，默认创建中文路径，除非用户明确要求英文路径。
+- 同一权威不得同时保留两个变体，也不得用重定向、符号链接或重复正文同时暴露两个名称。
+- 即使文件名为英文，说明性正文仍使用简体中文。
 
-Preserve independently valuable specialized documentation when justified by the project, including API references, data dictionaries, UI/UX guidelines, design systems, test strategies, security designs, research, release documentation, and operations documentation. Do not force empty symmetry between projects and do not create such documents merely to complete a template.
+保留项目确有需要且独立有价值的专项文档，例如 API 参考、数据字典、UI/UX 指南、设计系统、测试策略、安全设计、研究、发布和运维文档。不得为模板对称而创建空文档。
 
-## Workflow
+## 工作流程
 
-1. Read instruction files in the current directory and applicable parent directories.
-2. Inventory existing documentation, managed markers, and every reference to documentation paths in documentation, source code, configuration, CI, tests, and instruction files. Identify generated or externally maintained documentation.
-3. Inspect dependency manifests, configuration, primary source code, tests, CI, and available commands to establish current project facts.
-4. Classify existing content as canonical-document content, still-valuable specialized documentation, generated or externally maintained documentation, duplicated or outdated content, or unverifiable content.
-5. Select one allowed path for each bilingual authority before rewriting. Map every verified, still-valid fact to one authoritative canonical document. Preserve project conventions that do not conflict with the authority boundaries. Consolidate duplicated verified development rules in the selected development-rules path instead of repeating them elsewhere.
-6. Create missing canonical files and minimally update existing ones. In the selected development-rules document, keep the required managed source-size-policy link immediately after the title, followed only by verified project- and technology-specific rules. Put concrete architecture or security exceptions only in the selected architecture document and reference them from the development rules without copying their bodies.
-7. Render the source-size asset, the managed development-rules link block, and the shared CONTRIBUTING block with the selected canonical paths. Run `scripts/update_development_rules.py` after both the development-rules and source-size documents exist. Do not change any other shared content. The development-rules document remains the engineering-rules entry point; the source-size asset remains the sole file-size and file-responsibility authority.
-8. When a regular project-root `AGENTS.md` already exists and applicable instructions allow it, run `scripts/update_agents_navigation.py` to render its managed documentation navigation and content-boundary block and perform only the unambiguous path substitutions defined below. Do not create the file or modify nested instruction files.
-9. Run `scripts/validate_project_docs.py` and existing repository documentation checks. Fix all ordinary validation errors. Use `--strict` after explicitly authorized migration cleanup to also fail on legacy-path, nested-instruction, and suspected duplicate-rule warnings.
-10. Report files created, updated, and preserved; specialized documents retained; deprecation or cleanup candidates; validation performed; root `AGENTS.md` managed-block changes; and exact non-documentation or nested-instruction locations that still reference old paths.
+1. 读取当前目录和适用父目录中的指令文件。
+2. 盘点现有文档、托管标记，以及文档、源代码、配置、CI、测试和指令文件中对文档路径的所有引用；识别生成或外部维护的文档。
+3. 检查依赖清单、配置、主要源代码、测试、CI 和可用命令，建立当前项目事实。
+4. 把现有内容分类为 canonical 内容、仍有价值的专项内容、生成或外部维护内容、重复或过时内容、无法核实内容。
+5. 重写前为每类双语权威选择一个允许的路径。把每项已核实且仍有效的事实映射到一个权威 canonical 文档；保留不冲突的项目约定；将重复且已核实的开发规则归并到选定的开发规范路径。
+6. 创建缺失的 canonical 文件，并最小化更新现有文件。开发规范文档的标题后必须紧接托管的源代码规模策略链接，此后只写已核实的项目或技术规则。具体架构或安全例外只写入架构文档，开发规范只引用，不复制正文。
+7. 按选定路径渲染源代码规模 asset、开发规范托管链接区块和 CONTRIBUTING 共享区块。开发规范和规模规则文档都存在后运行 `scripts/update_development_rules.py`。不得修改其他共享内容。
+8. 若项目根 `AGENTS.md` 已存在且适用指令允许，运行 `scripts/update_agents_navigation.py` 渲染托管的文档导航与内容边界区块，并只执行下文规定的无歧义路径替换。不得创建该文件或修改嵌套指令文件。
+9. 运行 `scripts/validate_project_docs.py` 和仓库已有的文档检查，修复普通验证错误。只有在明确授权迁移清理后才使用 `--strict`，使旧路径、嵌套指令和疑似重复规则警告也导致失败。
+10. 报告创建、更新和保留的文件；保留的专项文档；弃用或清理候选；验证结果；根 `AGENTS.md` 托管区块变更；仍引用旧路径的非文档位置或嵌套指令文件准确位置。
 
-## Shared Resources
+## 共享资源
 
-Resolve resource paths relative to this skill directory.
+资源路径相对于本技能目录解析。
 
-- Use `scripts/canonical_paths.py` to resolve the selected Chinese or English path for each bilingual authority and to render declared `{{...}}` path variables in shared assets. Reject a project that contains both variants for one authority.
-- Render `assets/源代码规模与职责规则.md` to the selected source-size-rules path without editing, reformatting, or adding project-specific content. Preserve UTF-8, LF line endings, and one trailing newline.
-- Render `assets/开发规范-规模规则区块.md` into the selected development-rules document immediately after its `# 开发规范` title. Replace the complete block bounded by `<!-- write-project-docs:development-source-size:start -->` and `<!-- write-project-docs:development-source-size:end -->` when it already exists; otherwise insert the rendered block once. Run `python3 <skill-dir>/scripts/update_development_rules.py <project-root>` instead of hand-editing this block.
-- Render `assets/CONTRIBUTING-通用区块.md` into `CONTRIBUTING.md`. Replace the complete block bounded by `<!-- write-project-docs:shared-contributing:start -->` and `<!-- write-project-docs:shared-contributing:end -->` when it already exists; otherwise insert the rendered asset once in an appropriate location.
-- When the project-root `AGENTS.md` exists and is safely editable, render `assets/AGENTS-文档导航区块.md` with the selected paths. This managed block contains both canonical documentation navigation and the boundary against introducing unrequested process or administrative-management content. Replace the complete block bounded by `<!-- write-project-docs:document-navigation:start -->` and `<!-- write-project-docs:document-navigation:end -->` when it already exists; otherwise insert the rendered asset once in an appropriate documentation-navigation location.
-- After confirming that applicable instructions permit the narrow root-file edit, run `python3 <skill-dir>/scripts/update_agents_navigation.py <project-root>`. The script skips an absent file, rejects symlinks and malformed managed markers, preserves unrelated text, and never creates `AGENTS.md`.
-- Put project-specific source-size, architecture, and security exceptions in the selected architecture document. Each exception must include its exact scope, rationale, compensating controls, verification, and expiry or objectively testable exit condition. Do not customize a shared asset or create an ADR unless explicitly requested.
-- Do not repeat the `240`/`300`/`500`/`50` thresholds in `CONTRIBUTING.md` or the selected development-rules document; link to the selected source-size document.
-- Run `python3 <skill-dir>/scripts/validate_project_docs.py <project-root>`. Ordinary validation fails on missing canonical files, an absent or drifted development-rules source-size link, invalid shared assets, missing/drifted/duplicated managed blocks, broken local links, and other integrity violations. It reports legacy canonical paths, nested `AGENTS.md` references, and suspected repeated size rules as non-failing migration warnings.
-- Use `--strict` after explicitly authorized cleanup. Strict mode performs the same integrity checks and additionally turns every migration warning into failure; it does not use weaker byte or marker checks than ordinary mode.
+- 使用 `scripts/canonical_paths.py` 解析每类双语权威选定的中英文路径，并渲染共享 asset 中已声明的 `{{...}}` 路径变量。同一权威同时存在两个变体时必须拒绝继续。
+- 把 `assets/源代码规模与职责规则.md` 渲染到选定的规模规则路径，不得编辑、重排或添加项目特有内容；保持 UTF-8、LF 换行和一个结尾换行。
+- 把 `assets/开发规范-规模规则区块.md` 渲染到开发规范文档的 `# 开发规范` 标题之后。已有 `<!-- write-project-docs:development-source-size:start -->` 与 `<!-- write-project-docs:development-source-size:end -->` 边界时完整替换，否则只插入一次。使用 `python3 <skill-dir>/scripts/update_development_rules.py <project-root>`，不得手工编辑该区块。
+- 把 `assets/CONTRIBUTING-通用区块.md` 渲染到 `CONTRIBUTING.md`。已有 `<!-- write-project-docs:shared-contributing:start -->` 与 `<!-- write-project-docs:shared-contributing:end -->` 边界时完整替换，否则在合适位置只插入一次。
+- 若项目根 `AGENTS.md` 存在且可安全编辑，用选定路径渲染 `assets/AGENTS-文档导航区块.md`。该区块同时包含 canonical 文档导航和“不得引入未请求的流程或行政管理内容”边界。已有 `<!-- write-project-docs:document-navigation:start -->` 与 `<!-- write-project-docs:document-navigation:end -->` 边界时完整替换，否则只插入一次。
+- 确认适用指令允许狭义修改根文件后，运行 `python3 <skill-dir>/scripts/update_agents_navigation.py <project-root>`。脚本会跳过不存在的文件，拒绝符号链接和格式错误的托管标记，保留无关文本，且绝不创建 `AGENTS.md`。
+- 项目特有的源代码规模、架构和安全例外只写入选定的架构文档。每个例外必须包含准确范围、理由、补偿控制、验证方式，以及到期条件或可客观测试的退出条件。不得定制共享 asset；除非用户明确要求，不得创建 ADR。
+- 不得在 `CONTRIBUTING.md` 或开发规范文档中重复 `240`/`300`/`500`/`50` 阈值，只链接选定的源代码规模文档。
+- 运行 `python3 <skill-dir>/scripts/validate_project_docs.py <project-root>`。普通验证会在缺少 canonical 文件、开发规范中的规模规则链接缺失或漂移、共享 asset 无效、托管区块缺失/漂移/重复、本地链接损坏或其他完整性问题时失败；旧 canonical 路径、嵌套 `AGENTS.md` 引用和疑似重复规模规则只作为迁移警告。
+- 仅在明确授权清理后使用 `--strict`。严格模式执行相同完整性检查，并将每项迁移警告升级为失败；其字节或标记检查不得弱于普通模式。
 
-## Existing Root AGENTS.md Managed Block
+## 根 AGENTS.md 托管区块
 
-Apply this section only to `AGENTS.md` located directly at the project root.
+本节仅适用于项目根目录的 `AGENTS.md`：
 
-- If the root `AGENTS.md` does not exist, do not create it and do not report its absence as a documentation gap.
-- If it is a symlink, generated file, externally maintained file, or protected by applicable instructions, leave it unchanged and report why the managed block was not updated.
-- Use `scripts/update_agents_navigation.py` to replace an existing managed block or append the asset once when the block is absent. Do not hand-rewrite surrounding instructions.
-- Outside the managed block, replace only `docs/INDEX.md` and an unselected bilingual counterpart with the project's selected canonical path. Preserve every selected path and all surrounding wording, conditions, priorities, and scope.
-- Do not copy product, status, architecture, contribution, or development-rule bodies into `AGENTS.md`. The managed block points to authoritative documents and states the documentation-content boundary; it does not become a competing authority for project facts.
-- Inspect nested `AGENTS.md` files for stale paths and broken links, but report them without modification unless the user separately requests nested-instruction work.
+- 文件不存在时不得创建，也不得把缺少该文件报告为文档缺口。
+- 文件是符号链接、生成文件、外部维护文件或受适用指令保护时，保持不变并报告原因。
+- 使用 `scripts/update_agents_navigation.py` 替换现有托管区块；不存在时只追加一次。不得手工重写周围指令。
+- 托管区块外，只能把 `docs/INDEX.md` 和未选中的双语 counterpart 替换为项目选定的 canonical 路径；保留已选路径及其周围所有措辞、条件、优先级和作用域。
+- 不得把产品、状态、架构、贡献或开发规则正文复制进 `AGENTS.md`。托管区块只指向权威文档并声明内容边界，不得成为竞争性事实来源。
+- 检查嵌套 `AGENTS.md` 中的过时路径和断链，但只报告；除非用户另行要求，不得修改。
 
-## Consolidation and Migration
+## 归并与迁移
 
-Use these standard mappings:
+标准映射：
 
 - `docs/INDEX.md` → `docs/README.md`
-- An unselected Chinese or English canonical counterpart → the selected path for the same authority.
-- Verified project- or technology-specific implementations, limits, commands, and development rules → the selected development-rules path.
-- Project-agnostic size and responsibility rules embedded elsewhere → the selected source-size-rules path.
-- Project-specific rules found in an old size guide → the selected development-rules path or the `结构性例外` section of the selected architecture path.
+- 未选中的中英文 canonical counterpart → 同一权威的选定路径
+- 已核实的项目或技术实现、限制、命令和开发规则 → 选定的开发规范路径
+- 嵌在其他位置、与项目无关的规模和职责规则 → 选定的源代码规模规则路径
+- 旧规模指南中的项目特有规则 → 选定的开发规范路径，或架构文档的 `结构性例外` 章节
 
-Apply these migration rules:
+迁移规则：
 
-- Inventory references before changing canonical paths.
-- Absorb all unique, verified, still-valid information before identifying an older document as obsolete.
-- Leave generated or externally maintained documentation unchanged and record its update mechanism when verifiable.
-- Leave unverifiable documents unchanged. Do not propagate their uncertain content; discuss it only when the user explicitly asks for a documentation audit.
-- Fix documentation links affected by current edits. In an existing editable project-root `AGENTS.md`, update the managed documentation block and exact standard-mapping references. Report exact source, configuration, CI, test, other instruction-file, and nested `AGENTS.md` references to old paths without editing those files by default.
-- Do not delete, move, archive, or reorganize existing documents without explicit cleanup authorization. List fully absorbed old paths and the evidence for deprecation.
-- Do not use redirects, symlinks, duplicated shared clauses, parallel managed blocks, or simultaneous Chinese and English variants as a long-term migration state.
+- 更改 canonical 路径前盘点全部引用。
+- 把所有独有、已核实且仍有效的信息吸收完毕后，才能把旧文档列为弃用候选。
+- 生成或外部维护的文档保持不变；可核实时记录其更新机制。
+- 无法核实的文档保持不变，不得传播其中不确定的内容；仅在用户明确要求文档审查时讨论。
+- 修复本次编辑影响的文档链接。对现有且可编辑的根 `AGENTS.md`，更新托管区块和标准映射中的准确引用。源代码、配置、CI、测试、其他指令文件和嵌套 `AGENTS.md` 中的旧路径只报告，不默认修改。
+- 未经明确清理授权，不得删除、移动、归档或重组现有文档。列出已被完全吸收的旧路径及其弃用证据。
+- 不得把重定向、符号链接、重复共享条款、并行托管区块或同一权威的中英文双版本作为长期迁移状态。
 
-## File Requirements
+## 文件要求
 
 ### `README.md`
 
-Include the project name and one-sentence description, current-status summary with a prominent `STATUS.md` link, verified installation/start/test/check/build commands, and links to the documentation index, product, architecture, and contribution documents. Do not copy other document bodies.
+包含项目名和一句话说明、带醒目 `STATUS.md` 链接的当前状态摘要、已验证的安装/启动/测试/检查/构建命令，以及文档索引、产品、架构和贡献文档链接。不得复制其他文档正文。
 
 ### `STATUS.md`
 
-Record only verifiable lifecycle stage, deployment state, external-user state, non-discardable-data state, stability and compatibility commitments, allowed and prohibited changes, last review date when verifiable, and conditions requiring another status review.
+只记录可验证的生命周期阶段、部署状态、外部用户状态、不可丢弃数据状态、稳定性与兼容性承诺、允许和禁止的变更、可验证时的最近评审日期，以及触发再次评审的条件。
 
-Do not derive “undeployed”, “no external users”, or “no non-discardable data” solely from missing repository artifacts. Omit those fields unless direct project evidence or the user's instructions establish them.
+不得仅凭仓库缺少相关产物就推断“未部署”“没有外部用户”或“没有不可丢弃数据”；只有直接项目证据或用户指令成立时才写入。
 
-When the project is demonstrably local-only, undeployed, has no external users, and has no non-discardable data, state that backward compatibility is not guaranteed for APIs, configuration, or database schemas; breaking refactors and local-data resets are allowed; compatibility layers for old versions must not be created; and applicable quality checks must still pass.
+若有充分证据证明项目仅在本地、未部署、没有外部用户且没有不可丢弃数据，应说明 API、配置和数据库 schema 不保证向后兼容；允许破坏性重构和本地数据重置；不得为旧版本创建兼容层；适用质量检查仍须通过。
 
 ### `CONTRIBUTING.md`
 
-Include verified development-environment and dependency setup, local start/test/check/build commands, project-specific code style and review rules, and the rendered shared block from `assets/CONTRIBUTING-通用区块.md`. Link to architecture, development rules, and source-size rules instead of duplicating them.
+包含已核实的开发环境与依赖设置、本地启动/测试/检查/构建命令、项目特有的代码风格与评审规则，以及从 `assets/CONTRIBUTING-通用区块.md` 渲染的共享区块。链接架构、开发规范和源代码规模规则，不得复制其正文。
 
 ### `docs/README.md`
 
-Use this file as a routing page. List the selected path for each canonical document with its authority, including that the selected development-rules document is the engineering-rules entry point and the selected source-size document is its separate specialized policy, then list verified specialized and generated/external documents with concise purposes. Do not turn the index into another source of product, status, architecture, or development facts.
+仅作为路由页。列出每个 canonical 文档的选定路径和权威范围，明确开发规范是工程规则入口、源代码规模文档是独立专项策略；再列出已核实的专项文档和生成/外部文档及其简要用途。不得在索引中重复产品、状态、架构或开发事实。
 
-### `docs/产品说明.md` or `docs/product.md`
+### `docs/产品说明.md` 或 `docs/product.md`
 
-Include the problem, target users, goals, explicit non-goals, functional scope, core user flows and requirements, acceptance criteria, and known constraints or assumptions when verifiable.
+仅在可核实时包含问题、目标用户、目标、明确非目标、功能范围、核心用户流程与需求、验收标准、已知约束或假设。
 
-### `docs/架构说明.md` or `docs/architecture.md`
+### `docs/架构说明.md` 或 `docs/architecture.md`
 
-Describe the current design rather than an idealized blueprint: system boundaries and external dependencies, key modules and their responsibility/data/lifecycle owners, allowed dependency directions, data models and flows, module interfaces, technology stack, security boundaries, local execution model, quality attributes, risks and limitations, relevant existing ADR links, and verified source-size, architecture, or security exceptions. For every concrete exception, record its exact scope, rationale, compensating controls, verification, and expiry or objectively testable exit condition.
+描述当前设计而非理想蓝图：系统边界与外部依赖、关键模块及其职责/数据/生命周期 owner、允许的依赖方向、数据模型与流、模块接口、技术栈、安全边界、本地运行模型、质量属性、风险与限制、相关现有 ADR 链接，以及已核实的规模/架构/安全例外。每个具体例外都要记录准确范围、理由、补偿控制、验证方式，以及到期条件或可客观测试的退出条件。
 
-Do not place generic coding policy here. Use this document to prevent implementations from crossing established module boundaries or adding responsibilities to the wrong component.
+不得放置通用编码策略。该文档用于防止实现跨越既定模块边界或把职责放入错误组件。
 
-### `docs/开发规范.md` or `docs/development-rules.md`
+### `docs/开发规范.md` 或 `docs/development-rules.md`
 
-Start with exactly one `# 开发规范` title, followed immediately by the rendered managed block from `assets/开发规范-规模规则区块.md`. After that block, include only verified project- and technology-specific rules. A title plus the managed block is valid when no project-specific rules are verifiable; a title-only file is invalid.
+以且仅以一个 `# 开发规范` 标题开头，随后立即放置由 `assets/开发规范-规模规则区块.md` 渲染的托管区块。区块之后只写已核实的项目或技术规则。只有标题和托管区块是有效状态，只有标题则无效。
 
-Include rules such as source layout and placement, naming and language/framework conventions, concrete limits, error mappings, security mechanisms, data and concurrency implementations, testing strategy, named quality gates, and project-specific review requirements. Refer to the selected architecture document for owners, boundaries, dependency directions, and concrete exceptions. Use the managed block as the normative link to the selected source-size document.
+可包含源代码布局与放置、命名及语言/框架约定、具体限制、错误映射、安全机制、数据与并发实现、测试策略、具名质量门禁和项目特有评审要求。owner、边界、依赖方向和具体例外应引用架构文档；用托管区块作为源代码规模文档的规范链接。
 
-Do not repeat architecture descriptions, generic implementation-choice priorities, the shared Definition of Done, concrete exception bodies, or shared size thresholds.
+不得重复架构说明、通用实现选择优先级、共享 Definition of Done、具体例外正文或共享规模阈值。
 
-### `docs/源代码规模与职责规则.md` or `docs/source-code-size-and-responsibility-rules.md`
+### `docs/源代码规模与职责规则.md` 或 `docs/source-code-size-and-responsibility-rules.md`
 
-Use the rendered bundled asset as the entire document. Replace only declared canonical-path variables. Do not add project names, technologies, exceptions, commands, or local thresholds.
+以渲染后的捆绑 asset 作为完整文档，只替换已声明的 canonical 路径变量；不得添加项目名、技术、例外、命令或局部阈值。
 
-## ADR Exception
+## ADR 例外
 
-Create, rewrite, move, or organize ADRs only when the user explicitly requests ADR work. Preserve existing ADRs and link relevant records from the selected architecture document. Each new ADR must record status, date, context, alternatives, decision, and consequences. Do not report unrecorded decisions unless the user requests an ADR audit.
+只有用户明确要求 ADR 工作时，才能创建、重写、移动或整理 ADR。保留现有 ADR，并从架构文档链接相关记录。每个新 ADR 必须记录状态、日期、上下文、备选方案、决定和后果。除非用户要求 ADR 审查，不得报告未被记录的决定。
