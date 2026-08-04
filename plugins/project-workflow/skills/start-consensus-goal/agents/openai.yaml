@@ -1,0 +1,7 @@
+interface:
+  display_name: "Start Consensus Goal"
+  short_description: "Turn accepted discussion decisions into a running GOAL"
+  default_prompt: "使用 $project-workflow:start-consensus-goal 将当前讨论中已接受的决定整理为中文 GOAL 并立即启动。"
+
+policy:
+  allow_implicit_invocation: false

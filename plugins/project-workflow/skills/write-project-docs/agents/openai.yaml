@@ -1,0 +1,7 @@
+interface:
+  display_name: "Write Project Documentation"
+  short_description: "Standardize Chinese docs with bilingual filenames"
+  default_prompt: "使用 $project-workflow:write-project-docs 为当前项目创建、维护或迁移核心中文文档集合，沿用已选的中文或英文 canonical 文件名，并修正现有根 AGENTS.md 的文档导航与内容边界。"
+
+policy:
+  allow_implicit_invocation: false

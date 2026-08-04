@@ -1,0 +1,24 @@
+{
+  "name": "project-workflow",
+  "version": "0.1.0",
+  "description": "Initialize repository guidance, maintain project documentation, and turn accepted decisions into executable goals.",
+  "author": {
+    "name": "CoachPo",
+    "url": "https://github.com/coachpo"
+  },
+  "repository": "https://github.com/coachpo/plugins-codex",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Project Workflow",
+    "shortDescription": "Repository knowledge, docs, and consensus goals",
+    "longDescription": "Build a scoped AGENTS.md hierarchy, standardize evidence-backed project documentation, and turn accepted discussion decisions into drafted or persistent goals.",
+    "developerName": "CoachPo",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Write"],
+    "defaultPrompt": [
+      "使用 $project-workflow:init-deep 初始化或更新当前仓库的 AGENTS.md 层级。",
+      "使用 $project-workflow:write-project-docs 维护当前项目的中文核心文档。",
+      "使用 $project-workflow:start-consensus-goal 将当前共识整理成 GOAL 并启动。"
+    ]
+  }
+}

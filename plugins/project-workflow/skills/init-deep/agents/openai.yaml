@@ -1,0 +1,4 @@
+interface:
+  display_name: "Initialize AGENTS.md Hierarchy"
+  short_description: "Map a repository into scoped AGENTS.md guidance"
+  default_prompt: "使用 $project-workflow:init-deep 初始化或更新当前仓库的 AGENTS.md 层级。"
