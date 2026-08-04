@@ -1,12 +1,21 @@
 {
   "name": "project-workflow",
-  "version": "0.1.0+codex.20260804075941",
+  "version": "0.1.0+codex.20260804080307",
   "description": "\u521d\u59cb\u5316\u4ed3\u5e93\u6307\u5f15\u3001\u7ef4\u62a4\u9879\u76ee\u6587\u6863\uff0c\u5e76\u628a\u5df2\u63a5\u53d7\u7684\u51b3\u5b9a\u6574\u7406\u4e3a\u53ef\u6267\u884c\u76ee\u6807\u3002",
   "author": {
-    "name": "CoachPo",
+    "name": "coachpo",
     "url": "https://github.com/coachpo"
   },
+  "homepage": "https://github.com/coachpo/plugin-codex#readme",
   "repository": "https://github.com/coachpo/plugin-codex",
+  "license": "MIT",
+  "keywords": [
+    "agents-md",
+    "documentation",
+    "goals",
+    "project-workflow",
+    "codex"
+  ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Project Workflow",
@@ -22,6 +31,8 @@
       "\u4f7f\u7528 $project-workflow:init-deep \u57fa\u4e8e\u4ed3\u5e93\u8bc1\u636e\u521d\u59cb\u5316\u6216\u66f4\u65b0\u5f53\u524d\u4ed3\u5e93\u7684 AGENTS.md \u5c42\u7ea7\u3002",
       "\u4f7f\u7528 $project-workflow:write-project-docs \u57fa\u4e8e\u4ed3\u5e93\u8bc1\u636e\u7ef4\u62a4\u5f53\u524d\u9879\u76ee\u7684\u4e2d\u6587\u6838\u5fc3\u6587\u6863\u3002",
       "\u4f7f\u7528 $project-workflow:start-consensus-goal \u5c06\u5f53\u524d\u5171\u8bc6\u6574\u7406\u4e3a\u53ef\u9a8c\u8bc1\u7684\u4e2d\u6587 GOAL\uff0c\u5e76\u7acb\u5373\u542f\u52a8\u6301\u7eed\u6267\u884c\u3002"
-    ]
+    ],
+    "brandColor": "#1A73E8",
+    "websiteURL": "https://github.com/coachpo/plugin-codex"
   }
 }
