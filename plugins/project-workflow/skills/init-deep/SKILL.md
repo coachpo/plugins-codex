@@ -222,12 +222,3 @@ Unverified: [only material gaps, or none]
 ```
 
 Report created and updated files separately. Include a compact hierarchy when more than one file exists.
-
-## Guardrails
-
-- Never invent architecture, conventions, commands, or prohibitions from framework norms alone.
-- Never replace repository-specific instructions with generic best practices.
-- Never create an `AGENTS.md` for every directory.
-- Never treat parallelism or agent count as a success criterion.
-- Never let a numeric score override evidence about scope and distinctness.
-- Never claim validation that was not run.

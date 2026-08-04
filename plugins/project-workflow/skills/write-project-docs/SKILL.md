@@ -19,6 +19,7 @@ Create and maintain a concise, fact-based Simplified-Chinese documentation set. 
 - Omit unverifiable fields and sections. Do not add placeholders, “待确认”, open questions, speculation, or missing-information reports.
 - Do not inspect, infer, request, or report human maintainers, human owners, approvers, commit-message conventions, release dates or conditions, business KPIs/SLOs, or unrecorded external environments and data unless the user explicitly requests the topic and supplies verifiable evidence. A module or data `owner` means the component that owns a responsibility, write path, or lifecycle; establish it only from verified architecture evidence.
 - Do not introduce process or administrative-management documentation merely to make the documentation set appear complete. Unless the user explicitly requests it and supplies verifiable evidence, do not add approval, reporting, meeting, scheduling, personnel-governance, release-governance, commit-management, KPI/SLO, or similar content, documents, sections, placeholders, or open questions.
+- Do not create `docs/INDEX.md`, `docs/通用工程规范.md`, or additional documents such as Runbooks, `SECURITY.md`, `LICENSE`, `CHANGELOG.md`, glossaries, test plans, or technical-design documents unless explicitly requested. Preserve existing valuable specialized documents.
 - Keep one authoritative source for each fact. Link instead of duplicating bodies or generic rules.
 
 ## Canonical Documentation Set
@@ -147,16 +148,6 @@ Do not repeat architecture descriptions, generic implementation-choice prioritie
 ### `docs/源代码规模与职责规则.md` or `docs/source-code-size-and-responsibility-rules.md`
 
 Use the rendered bundled asset as the entire document. Replace only declared canonical-path variables. Do not add project names, technologies, exceptions, commands, or local thresholds.
-
-## Prohibitions
-
-- Do not create `docs/INDEX.md`, `docs/通用工程规范.md`, or both Chinese and English variants for one canonical authority.
-- Do not create `AGENTS.md`, modify nested `AGENTS.md` files, or rewrite instructions outside the managed root documentation-block scope.
-- Do not add profiles, project-specific branches, project names, technologies, commands, manifests, concrete limits, or project facts to shared assets.
-- Do not customize shared assets, copy the source-size policy body into the development-rules document, or make CONTRIBUTING a competing development-rule authority.
-- Do not create maintainer, owner, or approver placeholders.
-- Do not create Runbooks, `SECURITY.md`, `LICENSE`, `CHANGELOG.md`, glossaries, test plans, technical-design documents, or other additional documents unless explicitly requested. Preserve existing valuable ones.
-- Do not create `docs/adr/` or an ADR merely because an important decision is found.
 
 ## ADR Exception
 
