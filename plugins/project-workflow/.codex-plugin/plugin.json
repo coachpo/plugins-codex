@@ -6,7 +6,7 @@
     "name": "CoachPo",
     "url": "https://github.com/coachpo"
   },
-  "repository": "https://github.com/coachpo/plugins-codex",
+  "repository": "https://github.com/coachpo/plugin-codex",
   "skills": "./skills/",
   "interface": {
     "displayName": "Project Workflow",

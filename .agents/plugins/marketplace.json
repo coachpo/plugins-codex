@@ -1,5 +1,5 @@
 {
-  "name": "coachpo-plugins-codex",
+  "name": "coachpo-plugin-codex",
   "interface": {
     "displayName": "CoachPo Plugins"
   },
