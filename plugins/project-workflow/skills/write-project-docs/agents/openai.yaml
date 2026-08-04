@@ -1,7 +1,7 @@
 interface:
   display_name: "Write Project Documentation"
-  short_description: "以中英文 canonical 文件名维护简体中文项目文档"
-  default_prompt: "使用 $project-workflow:write-project-docs 基于仓库证据创建、维护或迁移当前项目的核心中文文档，沿用选定的中英文 canonical 文件名，并仅修正现有根 AGENTS.md 的托管文档区块。"
+  short_description: "以中英文规范文件名维护简体中文项目文档集合"
+  default_prompt: "使用 $project-workflow:write-project-docs 基于仓库证据创建、维护或迁移当前项目的核心中文文档，沿用选定的中英文规范文件名，并仅修正现有根 AGENTS.md 的托管文档区块。"
 
 policy:
   allow_implicit_invocation: false
