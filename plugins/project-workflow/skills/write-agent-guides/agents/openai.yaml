@@ -1,0 +1,4 @@
+interface:
+  display_name: "Write AGENTS.md Guides"
+  short_description: "将仓库事实整理为分层且作用域明确的 AGENTS.md 指引"
+  default_prompt: "使用 $project-workflow:write-agent-guides 基于仓库证据编写或更新当前仓库的 AGENTS.md 层级。"

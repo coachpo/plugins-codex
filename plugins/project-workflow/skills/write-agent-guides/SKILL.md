@@ -1,9 +1,9 @@
 ---
-name: init-deep
-description: 为代码仓库初始化、修复或刷新分层的 AGENTS.md 指导，基于仓库证据建立根级共同规则，并仅在子树存在实质性局部差异时添加嵌套规则。用于创建或完善 AGENTS.md、修复过时或冲突的代理指导、为大型单仓库补充分区说明，或审查并更新现有指导层级；需要维护完整项目文档集合时改用 write-project-docs。
+name: write-agent-guides
+description: 为代码仓库编写、修复或刷新分层的 AGENTS.md 指导，基于仓库证据建立根级共同规则，并仅在子树存在实质性局部差异时添加嵌套规则。用于创建或完善 AGENTS.md、修复过时或冲突的代理指导、为大型单仓库补充分区说明，或审查并更新现有指导层级；需要维护完整项目文档集合时改用 write-project-docs。
 ---
 
-# init-deep
+# write-agent-guides
 
 为目标仓库建立耐久、简洁、可验证的 `AGENTS.md` 指导层级。仓库根目录的 `AGENTS.md` 是主要产物；只有子树存在不同操作要求时才保留或创建更近的文件。
 
