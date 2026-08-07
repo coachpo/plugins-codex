@@ -1,8 +1,16 @@
 # plugin-codex
 
-CoachPo 的 Codex 插件 marketplace，用于发布可复用的项目工作流。
+CoachPo 的统一 Codex 插件 marketplace，从一个 GitHub 仓库发布 UI/UX 设计与项目工作流插件。
 
-## Project Workflow
+## 插件
+
+### Stitch UI/UX for Codex
+
+`stitch-ui-ux-codex` 提供五个适配 Codex 的 UI/UX 技能，用于提示词完善、Stitch 屏幕生成与编辑、设计系统提取、多页面迭代和 React 交付。插件原样保留，仍需单独配置官方 Google Stitch Remote MCP。
+
+详细说明见 [`plugins/stitch-ui-ux-codex/README.md`](plugins/stitch-ui-ux-codex/README.md)。
+
+### Project Workflow
 
 `project-workflow` 将仓库知识、项目文档和共识目标工作流打包为一个插件：
 
@@ -17,24 +25,44 @@ CoachPo 的 Codex 插件 marketplace，用于发布可复用的项目工作流�
 
 ```bash
 codex plugin marketplace add coachpo/plugin-codex --ref main
-codex plugin add project-workflow@coachpo-plugin-codex
+codex plugin add stitch-ui-ux-codex@coachpo
+codex plugin add project-workflow@coachpo
 ```
 
 安装或更新后，请新建 Codex 任务以加载插件技能。
+
+## 从旧 marketplace 迁移
+
+旧安装分别来自 `coachpo` 和 `coachpo-plugin-codex` 时，先移除旧插件与 marketplace，再安装统一仓库：
+
+```bash
+codex plugin remove stitch-ui-ux-codex@coachpo
+codex plugin remove project-workflow@coachpo-plugin-codex
+codex plugin marketplace remove coachpo
+codex plugin marketplace remove coachpo-plugin-codex
+codex plugin marketplace add coachpo/plugin-codex --ref main
+codex plugin add stitch-ui-ux-codex@coachpo
+codex plugin add project-workflow@coachpo
+```
 
 ## 仓库结构
 
 ```text
 .agents/plugins/marketplace.json
-plugins/project-workflow/
-├── .codex-plugin/plugin.json
-└── skills/
-    ├── draft-consensus-goal/
-    ├── init-deep/
-    ├── start-consensus-goal/
-    └── write-project-docs/
+plugins/
+├── stitch-ui-ux-codex/
+│   ├── .codex-plugin/plugin.json
+│   └── skills/
+└── project-workflow/
+    ├── .codex-plugin/plugin.json
+    └── skills/
+        ├── draft-consensus-goal/
+        ├── init-deep/
+        ├── start-consensus-goal/
+        └── write-project-docs/
 ```
 
-## License
+## 许可证
 
-[MIT](LICENSE)
+- 仓库整合内容与 Project Workflow：[`MIT`](LICENSE)
+- Stitch UI/UX for Codex：[`Apache-2.0`](plugins/stitch-ui-ux-codex/LICENSE)，并保留其 [`NOTICE`](plugins/stitch-ui-ux-codex/NOTICE)、[`THIRD_PARTY_NOTICES.md`](plugins/stitch-ui-ux-codex/THIRD_PARTY_NOTICES.md) 和 [`UPSTREAM.md`](plugins/stitch-ui-ux-codex/UPSTREAM.md)

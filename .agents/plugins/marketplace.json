@@ -1,9 +1,21 @@
 {
-  "name": "coachpo-plugin-codex",
+  "name": "coachpo",
   "interface": {
     "displayName": "CoachPo"
   },
   "plugins": [
+    {
+      "name": "stitch-ui-ux-codex",
+      "source": {
+        "source": "local",
+        "path": "./plugins/stitch-ui-ux-codex"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Design"
+    },
     {
       "name": "project-workflow",
       "source": {
