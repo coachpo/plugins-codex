@@ -11,7 +11,7 @@ CoachPo 的 Codex 插件市场，从一个 GitHub 仓库统一发布和维护可
 | Plugin | Category | 简介 |
 | --- | --- | --- |
 | [`stitch-ui-ux-codex`](plugins/stitch-ui-ux-codex/README.md) | Design | 基于独立配置的 Google Stitch Remote MCP，提供 UI/UX 设计、评审、设计系统提取和 React 交付工作流。 |
-| `project-workflow` | Productivity | 提供仓库知识初始化、中文项目文档维护，以及共识 GOAL 起草和持续执行工作流。 |
+| [`project-workflow`](plugins/project-workflow/README.md) | Productivity | 提供仓库知识初始化、中文项目文档维护，以及共识 GOAL 起草和持续执行工作流。 |
 
 ## 安装
 
