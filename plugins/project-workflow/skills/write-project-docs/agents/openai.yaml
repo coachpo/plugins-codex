@@ -1,6 +1,6 @@
 interface:
   display_name: "Write Project Documentation"
-  short_description: "基于仓库证据审查或维护中文项目文档与工程规范"
+  short_description: "基于仓库证据审查或维护项目文档与工程规范（中文或英文，默认中文）"
   default_prompt: "使用 $project-workflow:write-project-docs 检查当前项目文档；审查请求只读报告，维护请求完成范围内更新并验证。"
 
 policy:

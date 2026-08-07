@@ -12,24 +12,39 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = SKILL_ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
-from canonical_paths import render_template, select_canonical_paths
+from canonical_paths import (
+    DocumentLanguage,
+    render_template,
+    select_canonical_paths,
+)
 from contributing_blocks import (
-    MVP_SECTION_HEADING,
-    MVP_STATUS_DISABLED,
-    MVP_STATUS_ENABLED,
     MvpMode,
     compose_contributing_block,
     parse_mvp_mode,
     validate_mvp_asset,
 )
+from doc_anchors import CHINESE_PROFILE, ENGLISH_PROFILE
 
+
+ZH = DocumentLanguage.CHINESE
+MVP_SECTION_HEADING = CHINESE_PROFILE.mvp_heading
+MVP_STATUS_ENABLED = CHINESE_PROFILE.mvp_status_enabled_line
+MVP_STATUS_DISABLED = CHINESE_PROFILE.mvp_status_disabled_line
 
 UPDATE_SCRIPT = SCRIPTS / "update_contributing.py"
 VALIDATE_SCRIPT = SCRIPTS / "validate_project_docs.py"
-BASE_ASSET = SKILL_ROOT / "assets" / "CONTRIBUTING-通用区块.md"
-MVP_ASSET = SKILL_ROOT / "assets" / "CONTRIBUTING-MVP-快速验证区块.md"
-DEVELOPMENT_ASSET = SKILL_ROOT / "assets" / "开发规范-规模规则区块.md"
-SOURCE_SIZE_ASSET = SKILL_ROOT / "assets" / "源代码规模与职责规则.md"
+BASE_ASSET = CHINESE_PROFILE.asset_path(
+    SKILL_ROOT, CHINESE_PROFILE.contributing_base_asset_name
+)
+MVP_ASSET = CHINESE_PROFILE.asset_path(
+    SKILL_ROOT, CHINESE_PROFILE.contributing_mvp_asset_name
+)
+DEVELOPMENT_ASSET = CHINESE_PROFILE.asset_path(
+    SKILL_ROOT, CHINESE_PROFILE.development_asset_name
+)
+SOURCE_SIZE_ASSET = CHINESE_PROFILE.asset_path(
+    SKILL_ROOT, CHINESE_PROFILE.source_size_asset_name
+)
 
 
 def write_text(path: Path, text: str) -> None:
@@ -40,9 +55,9 @@ def write_text(path: Path, text: str) -> None:
 
 class MvpModeTests(unittest.TestCase):
     def test_parse_three_states(self) -> None:
-        self.assertIs(parse_mvp_mode(MVP_STATUS_ENABLED), MvpMode.ENABLED)
-        self.assertIs(parse_mvp_mode(MVP_STATUS_DISABLED), MvpMode.DISABLED)
-        self.assertIs(parse_mvp_mode("# 项目状态\n"), MvpMode.ABSENT)
+        self.assertIs(parse_mvp_mode(MVP_STATUS_ENABLED, ZH), MvpMode.ENABLED)
+        self.assertIs(parse_mvp_mode(MVP_STATUS_DISABLED, ZH), MvpMode.DISABLED)
+        self.assertIs(parse_mvp_mode("# 项目状态\n", ZH), MvpMode.ABSENT)
 
     def test_rejects_malformed_duplicate_and_conflicting_states(self) -> None:
         cases = (
@@ -56,7 +71,7 @@ class MvpModeTests(unittest.TestCase):
         for status_text in cases:
             with self.subTest(status_text=status_text):
                 with self.assertRaises(ValueError):
-                    parse_mvp_mode(status_text)
+                    parse_mvp_mode(status_text, ZH)
 
     def test_ignores_invisible_pseudo_states_and_ordinary_narrative(self) -> None:
         status_text = (
@@ -81,17 +96,21 @@ class MvpModeTests(unittest.TestCase):
             "当前说明提到 MVP 快速验证模式，但不是状态键。\n\n"
             f"{MVP_STATUS_ENABLED}\n"
         )
-        self.assertIs(parse_mvp_mode(status_text), MvpMode.ENABLED)
+        self.assertIs(parse_mvp_mode(status_text, ZH), MvpMode.ENABLED)
 
     def test_validates_and_composes_mvp_asset(self) -> None:
         base = BASE_ASSET.read_text(encoding="utf-8")
         mvp = MVP_ASSET.read_text(encoding="utf-8")
-        validate_mvp_asset(mvp)
-        enabled = compose_contributing_block(base, mvp, mvp_mode=MvpMode.ENABLED)
+        validate_mvp_asset(mvp, CHINESE_PROFILE)
+        enabled = compose_contributing_block(
+            base, mvp, mvp_mode=MvpMode.ENABLED, language=ZH
+        )
         self.assertEqual(enabled.count(MVP_SECTION_HEADING), 1)
         self.assertLess(enabled.index(MVP_SECTION_HEADING), enabled.index("## 完成定义"))
         self.assertEqual(
-            compose_contributing_block(base, mvp, mvp_mode=MvpMode.ABSENT),
+            compose_contributing_block(
+                base, mvp, mvp_mode=MvpMode.ABSENT, language=ZH
+            ),
             base,
         )
         embedded = base.replace(
@@ -100,7 +119,7 @@ class MvpModeTests(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             compose_contributing_block(
-                embedded, mvp, mvp_mode=MvpMode.DISABLED
+                embedded, mvp, mvp_mode=MvpMode.DISABLED, language=ZH
             )
 
     def test_rejects_malformed_mvp_assets(self) -> None:
@@ -118,7 +137,7 @@ class MvpModeTests(unittest.TestCase):
         for asset in cases:
             with self.subTest(asset=asset[-40:]):
                 with self.assertRaises(ValueError):
-                    validate_mvp_asset(asset)
+                    validate_mvp_asset(asset, CHINESE_PROFILE)
 
 
 class UpdateContributingTests(unittest.TestCase):
@@ -274,7 +293,7 @@ class UpdateContributingTests(unittest.TestCase):
                 directory, MVP_STATUS_ENABLED + "\n"
             )
             enabled = compose_contributing_block(
-                base, mvp, mvp_mode=MvpMode.ENABLED
+                base, mvp, mvp_mode=MvpMode.ENABLED, language=ZH
             )
             duplicate = enabled.replace(
                 "## 完成定义\n",
@@ -291,7 +310,10 @@ class UpdateContributingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             write_text(root / "README.md", "# Project\n")
-            write_text(root / "STATUS.md", MVP_STATUS_ENABLED + "\n")
+            write_text(
+                root / "STATUS.md",
+                ENGLISH_PROFILE.mvp_status_enabled_line + "\n",
+            )
             write_text(root / "docs" / "README.md", "# Docs\n")
             for relative in (
                 "docs/product.md",
@@ -299,7 +321,7 @@ class UpdateContributingTests(unittest.TestCase):
                 "docs/development-rules.md",
                 "docs/source-code-size-and-responsibility-rules.md",
             ):
-                write_text(root / relative, "# 文档\n")
+                write_text(root / relative, "# Doc\n")
             write_text(root / "CONTRIBUTING.md", "# Contributing\n")
             result = self.run_update(root)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -307,6 +329,9 @@ class UpdateContributingTests(unittest.TestCase):
             self.assertIn("(docs/product.md)", actual)
             self.assertIn("(docs/architecture.md)", actual)
             self.assertIn("(docs/development-rules.md)", actual)
+            self.assertIn(ENGLISH_PROFILE.mvp_heading + "\n", actual)
+            for title in ENGLISH_PROFILE.contributing_section_titles:
+                self.assertIn(f"## {title}\n", actual)
 
     def test_validator_accepts_all_three_mvp_states(self) -> None:
         states = (MVP_STATUS_ENABLED + "\n", MVP_STATUS_DISABLED + "\n", "# 状态\n")
@@ -333,7 +358,7 @@ class UpdateContributingTests(unittest.TestCase):
             before = contributing.read_bytes()
             validation = self.run_validator(root)
             self.assertNotEqual(validation.returncode, 0)
-            self.assertIn("MVP 快速验证模式状态行无效", validation.stdout)
+            self.assertIn("状态行无效", validation.stdout)
             self.assertEqual(contributing.read_bytes(), before)
 
     def test_preserves_crlf_outside_managed_span(self) -> None:

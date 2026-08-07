@@ -11,9 +11,13 @@ from urllib.parse import unquote, urlsplit
 
 from canonical_paths import (
     ALWAYS_REQUIRED_PATHS,
+    CANONICAL_DOCUMENTS,
+    ProjectDocsContext,
+    add_language_argument,
     canonical_path_mappings,
     render_template,
-    select_canonical_paths,
+    requested_language,
+    resolve_project_docs,
 )
 from contributing_blocks import (
     MvpMode,
@@ -22,6 +26,7 @@ from contributing_blocks import (
     parse_mvp_mode,
     render_contributing_assets,
 )
+from doc_anchors import profile_for
 from managed_blocks import (
     ManagedBlockError,
     locate_managed_block,
@@ -32,6 +37,7 @@ from managed_blocks import (
 COMPETING_PATHS = (
     "docs/INDEX.md",
     "docs/通用工程规范.md",
+    "docs/general-engineering-rules.md",
 )
 
 IGNORED_PARTS = {
@@ -70,9 +76,19 @@ INLINE_LINK_RE = re.compile(
 REFERENCE_LINK_RE = re.compile(
     r"^\s*\[[^\]]+\]:\s*(?P<target><[^>]+>|\S+)", re.MULTILINE
 )
+_THRESHOLD_VALUE = r"(?<!\d)`?(?:240|300|50)`?(?!\d)"
+_THRESHOLD_UNIT = r"(?:行|lines?)"
+_THRESHOLD_COMPARATOR = (
+    r"超过|大于|达到|约|不少于|>=?|≤|"
+    r"over|more than|no more than|greater than|larger than|longer than|"
+    r"exceeds?|exceeding|at least|at most|up to|under|below|beyond|"
+    r"about|around|approximately|reach(?:es|ing)?"
+)
+_THRESHOLD_LIMIT_WORD = r"阈值|上限|限制|limits?|thresholds?|caps?|maximum|max"
 THRESHOLD_RE = re.compile(
-    r"(?:(?:超过|大于|达到|约|不少于|>=?|≤)\s*`?(?:240|300|500|50)`?\s*(?:行|lines?)|"
-    r"(?:240|300|500|50)\s*(?:行|lines?)\s*(?:阈值|上限|限制))",
+    rf"(?:(?:{_THRESHOLD_COMPARATOR})\s*{_THRESHOLD_VALUE}\s*{_THRESHOLD_UNIT}|"
+    rf"{_THRESHOLD_VALUE}\s*{_THRESHOLD_UNIT}\s*(?:{_THRESHOLD_LIMIT_WORD})|"
+    rf"{_THRESHOLD_VALUE}-line\s+(?:{_THRESHOLD_LIMIT_WORD}))",
     re.IGNORECASE,
 )
 
@@ -98,6 +114,7 @@ def parse_args() -> argparse.Namespace:
             "视为失败；共享内容缺失、漂移或区块边界错误在普通模式也会失败。"
         ),
     )
+    add_language_argument(parser)
     return parser.parse_args()
 
 
@@ -126,12 +143,16 @@ def extract_link_targets(text: str) -> list[str]:
 
 
 def legacy_path_references(
-    text: str, selected: dict[str, str]
+    text: str, selected: dict[str, str] | None
 ) -> list[tuple[int, str]]:
+    """Report stale paths; without a resolved language only fixed ones qualify."""
+
     references: list[tuple[int, str]] = []
-    stale_paths = LEGACY_DOC_PATHS + tuple(
-        old_path for old_path, _ in canonical_path_mappings(selected)
-    )
+    stale_paths = LEGACY_DOC_PATHS
+    if selected is not None:
+        stale_paths += tuple(
+            old_path for old_path, _ in canonical_path_mappings(selected)
+        )
     for line_number, line in enumerate(text.splitlines(), start=1):
         for legacy_path in stale_paths:
             if legacy_path in line:
@@ -187,29 +208,15 @@ def validate_link(source: Path, raw_target: str, root: Path) -> str | None:
     return None
 
 
-def main() -> int:
-    args = parse_args()
-    root = Path(args.project_root).expanduser().resolve()
-    skill_root = Path(__file__).resolve().parent.parent
+def check_language_anchors(
+    root: Path, skill_root: Path, context: ProjectDocsContext
+) -> tuple[list[str], list[str]]:
+    """Check the anchors, assets and managed blocks of the resolved language."""
+
     errors: list[str] = []
     warnings: list[str] = []
-
-    if not root.is_dir():
-        print(f"错误：项目根目录不存在或不是目录：{root}", file=sys.stderr)
-        return 2
-
-    docs_directory = root / "docs"
-    if docs_directory.is_symlink():
-        print("错误：")
-        print("- docs 目录不得使用符号链接")
-        return 1
-
-    for relative in ALWAYS_REQUIRED_PATHS:
-        path = root / relative
-        if not path.is_file():
-            errors.append(f"缺少固定文档：{relative}")
-        elif path.is_symlink():
-            errors.append(f"固定文档不得使用符号链接：{relative}")
+    selected = context.selected
+    profile = profile_for(context.language)
 
     mvp_mode: MvpMode | None = None
     status_path = root / "STATUS.md"
@@ -220,22 +227,16 @@ def main() -> int:
             errors.append("STATUS.md 不是有效 UTF-8")
         else:
             try:
-                mvp_mode = parse_mvp_mode(status_text)
+                mvp_mode = parse_mvp_mode(status_text, context.language)
             except ValueError as error:
                 errors.append(str(error))
 
-    selected, path_errors = select_canonical_paths(root)
-    errors.extend(path_errors)
     for relative in selected.values():
         path = root / relative
         if path.is_symlink():
             errors.append(f"固定文档不得使用符号链接：{relative}")
         elif path.exists() and not path.is_file():
             errors.append(f"固定文档必须是普通文件：{relative}")
-
-    for relative in COMPETING_PATHS:
-        if (root / relative).exists():
-            warnings.append(f"存在竞争或遗留 canonical 路径：{relative}")
 
     development_rules = root / selected["development_rules"]
     if development_rules.is_file() and not development_rules.is_symlink():
@@ -244,23 +245,29 @@ def main() -> int:
         except UnicodeDecodeError:
             pass
         else:
+            development_title = profile.development_rules_title
             has_canonical_prefix = (
-                development_text == "# 开发规范"
-                or development_text.startswith("# 开发规范\n")
+                development_text == development_title
+                or development_text.startswith(development_title + "\n")
             )
             if (
                 not has_canonical_prefix
-                or markdown_h1_lines(development_text) != ["# 开发规范"]
+                or markdown_h1_lines(development_text) != [development_title]
             ):
                 errors.append(
                     f"{selected['development_rules']} 必须以唯一的"
-                    "“# 开发规范”标题开头"
+                    f"“{development_title}”标题开头"
                 )
 
-    development_asset = skill_root / "assets" / "开发规范-规模规则区块.md"
+    development_asset = profile.asset_path(
+        skill_root, profile.development_asset_name
+    )
     development_asset_issue: str | None = None
     if development_asset.is_symlink() or not development_asset.is_file():
-        errors.append("skill 缺少普通共享资源：assets/开发规范-规模规则区块.md")
+        errors.append(
+            "skill 缺少普通共享资源："
+            + profile.asset_display(profile.development_asset_name)
+        )
     else:
         try:
             expected_development_block = render_template(
@@ -302,8 +309,8 @@ def main() -> int:
                         f"{selected['development_rules']} 缺少规模规则引用区块"
                     )
                 elif actual_development[: span.start] not in {
-                    "# 开发规范\n\n".encode("utf-8"),
-                    "# 开发规范\r\n\r\n".encode("utf-8"),
+                    (profile.development_rules_title + "\n\n").encode("utf-8"),
+                    (profile.development_rules_title + "\r\n\r\n").encode("utf-8"),
                 }:
                     errors.append(
                         f"{selected['development_rules']} 的规模规则引用区块"
@@ -319,10 +326,15 @@ def main() -> int:
                         "已漂移，必须用 asset 完整替换"
                     )
 
-    source_asset = skill_root / "assets" / "源代码规模与职责规则.md"
+    source_asset = profile.asset_path(
+        skill_root, profile.source_size_asset_name
+    )
     project_source_rules = root / selected["source_size_rules"]
     if source_asset.is_symlink() or not source_asset.is_file():
-        errors.append("skill 缺少普通共享资源：assets/源代码规模与职责规则.md")
+        errors.append(
+            "skill 缺少普通共享资源："
+            + profile.asset_display(profile.source_size_asset_name)
+        )
     elif project_source_rules.is_file():
         try:
             expected_source_rules = render_template(
@@ -337,9 +349,11 @@ def main() -> int:
                     "不一致"
                 )
 
-    contributing_asset = skill_root / "assets" / "CONTRIBUTING-通用区块.md"
-    contributing_mvp_asset = (
-        skill_root / "assets" / "CONTRIBUTING-MVP-快速验证区块.md"
+    contributing_asset = profile.asset_path(
+        skill_root, profile.contributing_base_asset_name
+    )
+    contributing_mvp_asset = profile.asset_path(
+        skill_root, profile.contributing_mvp_asset_name
     )
     contributing = root / "CONTRIBUTING.md"
     asset_issue: str | None = None
@@ -354,10 +368,14 @@ def main() -> int:
         and not contributing_mvp_asset.is_symlink()
     )
     if not base_asset_ready:
-        errors.append("skill 缺少普通共享资源：assets/CONTRIBUTING-通用区块.md")
+        errors.append(
+            "skill 缺少普通共享资源："
+            + profile.asset_display(profile.contributing_base_asset_name)
+        )
     if not mvp_asset_ready:
         errors.append(
-            "skill 缺少普通共享资源：assets/CONTRIBUTING-MVP-快速验证区块.md"
+            "skill 缺少普通共享资源："
+            + profile.asset_display(profile.contributing_mvp_asset_name)
         )
     if base_asset_ready and mvp_asset_ready:
         try:
@@ -365,6 +383,7 @@ def main() -> int:
                 contributing_asset.read_bytes(),
                 contributing_mvp_asset.read_bytes(),
                 selected,
+                context.language,
             )
         except ValueError as error:
             asset_issue = str(error)
@@ -383,6 +402,7 @@ def main() -> int:
                 expected_base_block.decode("utf-8"),
                 expected_mvp_block.decode("utf-8"),
                 mvp_mode=mvp_mode,
+                language=context.language,
             )
         except (UnicodeDecodeError, ValueError) as error:
             asset_issue = str(error)
@@ -421,13 +441,15 @@ def main() -> int:
             except ManagedBlockError as error:
                 errors.append(str(error))
             else:
-                mvp_positions = mvp_heading_positions(actual_contributing_text)
+                mvp_positions = mvp_heading_positions(
+                    actual_contributing_text, profile
+                )
                 if span is None:
                     errors.append("CONTRIBUTING.md 缺少共享 contribution asset")
                     if mvp_positions:
                         errors.append(
                             "CONTRIBUTING.md 在托管区块外包含"
-                            "“### MVP 快速验证”"
+                            f"“{profile.mvp_heading}”"
                         )
                 else:
                     outside_mvp = [
@@ -443,11 +465,12 @@ def main() -> int:
                     if outside_mvp:
                         errors.append(
                             "CONTRIBUTING.md 在托管区块外包含"
-                            "“### MVP 快速验证”"
+                            f"“{profile.mvp_heading}”"
                         )
                     if len(inside_mvp) > 1:
                         errors.append(
-                            "CONTRIBUTING.md 的共享区块包含重复 MVP 快速验证标题"
+                            "CONTRIBUTING.md 的共享区块包含重复"
+                            f"“{profile.mvp_title}”标题"
                         )
                     if (
                         actual_contributing_text[span.start : span.end]
@@ -460,11 +483,14 @@ def main() -> int:
                             "必须用 asset 完整替换"
                         )
 
-    agents_asset = skill_root / "assets" / "AGENTS-文档导航区块.md"
+    agents_asset = profile.asset_path(skill_root, profile.agents_asset_name)
     root_agents = root / "AGENTS.md"
     agents_asset_issue: str | None = None
     if agents_asset.is_symlink() or not agents_asset.is_file():
-        errors.append("skill 缺少普通共享资源：assets/AGENTS-文档导航区块.md")
+        errors.append(
+            "skill 缺少普通共享资源："
+            + profile.asset_display(profile.agents_asset_name)
+        )
     else:
         try:
             expected_agents_block = render_template(
@@ -528,6 +554,66 @@ def main() -> int:
                     f"AGENTS.md:{line_number}: 仍引用旧 canonical 路径：{legacy_path}"
                 )
 
+    return errors, warnings
+
+
+def main() -> int:
+    args = parse_args()
+    root = Path(args.project_root).expanduser().resolve()
+    skill_root = Path(__file__).resolve().parent.parent
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if not root.is_dir():
+        print(f"错误：项目根目录不存在或不是目录：{root}", file=sys.stderr)
+        return 2
+
+    docs_directory = root / "docs"
+    if docs_directory.is_symlink():
+        print("错误：")
+        print("- docs 目录不得使用符号链接")
+        return 1
+
+    for relative in ALWAYS_REQUIRED_PATHS:
+        path = root / relative
+        if not path.is_file():
+            errors.append(f"缺少固定文档：{relative}")
+        elif path.is_symlink():
+            errors.append(f"固定文档不得使用符号链接：{relative}")
+
+    for relative in COMPETING_PATHS:
+        if (root / relative).exists():
+            warnings.append(f"存在竞争或遗留 canonical 路径：{relative}")
+
+    context = resolve_project_docs(
+        root, language=requested_language(args.language)
+    )
+    errors.extend(context.errors)
+    # 语言未确定时，锚点和 asset 比对只会基于回退语言给出误导性结论；
+    # 下面与语言无关的检查照常执行，一并报告。
+    if context.language_resolved:
+        selected: dict[str, str] | None = context.selected
+        anchor_errors, anchor_warnings = check_language_anchors(
+            root, skill_root, context
+        )
+        errors.extend(anchor_errors)
+        warnings.extend(anchor_warnings)
+        size_rule_paths = {
+            context.selected["source_size_rules"],
+            context.selected["architecture"],
+        }
+        development_rules_path: str | None = context.selected["development_rules"]
+    else:
+        selected = None
+        size_rule_paths = {
+            candidate
+            for document in CANONICAL_DOCUMENTS
+            if document.key in {"source_size_rules", "architecture"}
+            for candidate in (document.chinese_path, document.english_path)
+        }
+        development_rules_path = None
+
+    root_agents = root / "AGENTS.md"
     docs = markdown_files(root)
     for path in docs:
         try:
@@ -547,17 +633,14 @@ def main() -> int:
                 errors.append(issue)
 
         relative = path.relative_to(root).as_posix()
-        if relative not in {
-            selected["source_size_rules"],
-            selected["architecture"],
-        }:
+        if relative not in size_rule_paths:
             for line_number, line in enumerate(text.splitlines(), start=1):
                 if THRESHOLD_RE.search(line):
                     message = (
                         f"{relative}:{line_number}: 可能重复了共享规模阈值；"
                         "应改为链接"
                     )
-                    if relative == selected["development_rules"]:
+                    if relative == development_rules_path:
                         errors.append(message)
                     else:
                         warnings.append(message)

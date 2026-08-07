@@ -10,10 +10,13 @@ import tempfile
 from pathlib import Path
 
 from canonical_paths import (
+    add_language_argument,
     canonical_path_mappings,
     render_template,
-    select_canonical_paths,
+    requested_language,
+    resolve_project_docs,
 )
+from doc_anchors import LanguageProfile, profile_for
 from managed_blocks import (
     ManagedBlockError,
     locate_managed_block,
@@ -23,7 +26,6 @@ from managed_blocks import (
 
 START_MARKER = "<!-- write-project-docs:document-navigation:start -->"
 END_MARKER = "<!-- write-project-docs:document-navigation:end -->"
-SECTION_TITLES = ("项目文档导航", "项目文档内容边界")
 FIXED_PATH_MAPPINGS = (
     ("docs/INDEX.md", "docs/README.md"),
 )
@@ -41,10 +43,13 @@ def parse_args() -> argparse.Namespace:
         default=".",
         help="项目根目录，默认为当前目录。",
     )
+    add_language_argument(parser)
     return parser.parse_args()
 
 
-def insert_or_replace_block(text: str, asset: str) -> tuple[str, str]:
+def insert_or_replace_block(
+    text: str, asset: str, profile: LanguageProfile
+) -> tuple[str, str]:
     try:
         span = locate_managed_block(
             text, START_MARKER, END_MARKER, "根 AGENTS.md 的文档区块"
@@ -53,7 +58,9 @@ def insert_or_replace_block(text: str, asset: str) -> tuple[str, str]:
         raise ValueError(str(error)) from error
 
     if span is None:
-        existing_titles = visible_section_titles(text, SECTION_TITLES)
+        existing_titles = visible_section_titles(
+            text, profile.agents_section_titles
+        )
         if existing_titles:
             titles = "、".join(f"## {title}" for title in sorted(existing_titles))
             raise ValueError(f"根 AGENTS.md 的文档区块已漂移：{titles}")
@@ -95,13 +102,27 @@ def main() -> int:
     root = Path(args.project_root).expanduser().resolve()
     agents_path = root / "AGENTS.md"
     skill_root = Path(__file__).resolve().parent.parent
-    asset_path = skill_root / "assets" / "AGENTS-文档导航区块.md"
 
     if not root.is_dir():
         print(f"错误：项目根目录不存在或不是目录：{root}")
         return 2
+
+    context = resolve_project_docs(root, language=requested_language(args.language))
+    if context.errors:
+        print("错误：")
+        for error in context.errors:
+            print(f"- {error}")
+        print("未修改根 AGENTS.md")
+        return 1
+    selected = context.selected
+    profile = profile_for(context.language)
+
+    asset_path = profile.asset_path(skill_root, profile.agents_asset_name)
     if asset_path.is_symlink() or not asset_path.is_file():
-        print("错误：skill 缺少普通文件 assets/AGENTS-文档导航区块.md")
+        print(
+            "错误：skill 缺少普通文件 "
+            + profile.asset_display(profile.agents_asset_name)
+        )
         return 2
     if agents_path.is_symlink():
         print("错误：根 AGENTS.md 是符号链接；未修改")
@@ -121,13 +142,6 @@ def main() -> int:
         print("错误：根 AGENTS.md 不是有效 UTF-8；未修改")
         return 1
 
-    selected, path_errors = select_canonical_paths(root)
-    if path_errors:
-        print("错误：")
-        for error in path_errors:
-            print(f"- {error}")
-        print("未修改根 AGENTS.md")
-        return 1
     try:
         asset = render_template(
             asset_template, selected, "AGENTS 文档区块 asset"
@@ -165,7 +179,7 @@ def main() -> int:
 
     try:
         updated, block_action = insert_or_replace_block(
-            normalized_original, asset
+            normalized_original, asset, profile
         )
     except ValueError as error:
         print(f"错误：{error}；未修改")
@@ -177,7 +191,10 @@ def main() -> int:
 
     write_atomically(agents_path, updated)
     action_text = "已插入" if block_action == "inserted" else "已更新"
-    print(f"{action_text}根 AGENTS.md 文档区块。")
+    print(
+        f"{action_text}根 AGENTS.md 文档区块；"
+        f"文档语言：{profile.language.label}。"
+    )
     for replacement in replacements:
         print(f"已修正：{replacement}")
     return 0

@@ -1,0 +1,7 @@
+### MVP Fast Validation
+
+This phase targets validating the confirmed core assumptions, scope, non-goals, and observable acceptance and exit conditions in [`{{PRODUCT_DOC}}`]({{PRODUCT_DOC}}), prioritizing the smallest observable end-to-end loop that produces usable evidence. "Shortest" means the shortest path to trustworthy feedback, not the fewest lines of code, steps, or tests.
+
+When several options all satisfy the permitted changes and compatibility policy in [`STATUS.md`](STATUS.md), the architectural and security boundaries in [`{{ARCHITECTURE_DOC}}`]({{ARCHITECTURE_DOC}}), and the project rules in [`{{DEVELOPMENT_RULES_DOC}}`]({{DEVELOPMENT_RULES_DOC}}), prefer the one with the smallest change surface, the fewest new dependencies, and the easiest observation and rollback. Local, low-risk, reversible implementation details that do not materially change those constraints may be decided directly within existing authority and the established development workflow; design-level choices follow "General Design Principles" and implementation-level choices follow the priority order in this section.
+
+Implement only what the current validation requires. Do not add generalized capabilities, abstractions, or dependencies for unvalidated requirements. MVP status is never a reason to skip required verification, lower security, privacy, or data integrity requirements, widen permissions, or present an unaccepted and unhardened validation implementation as formal architecture or production capability.
