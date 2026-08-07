@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Update the managed documentation block in an existing root AGENTS.md."""
+"""Update the documentation sections in an existing root AGENTS.md."""
 
 from __future__ import annotations
 
@@ -14,11 +14,18 @@ from canonical_paths import (
     render_template,
     select_canonical_paths,
 )
-from managed_blocks import ManagedBlockError, locate_managed_block
+from managed_blocks import (
+    ManagedBlockError,
+    locate_managed_block,
+    locate_visible_asset_block,
+    visible_section_titles,
+)
 
 
-START_MARKER = "<!-- write-project-docs:document-navigation:start -->"
-END_MARKER = "<!-- write-project-docs:document-navigation:end -->"
+LEGACY_START_MARKER = "<!-- write-project-docs:document-navigation:start -->"
+LEGACY_END_MARKER = "<!-- write-project-docs:document-navigation:end -->"
+MANAGED_COMMENT_PREFIX = "<!-- write-project-docs:"
+SECTION_TITLES = ("项目文档导航", "项目文档内容边界")
 FIXED_PATH_MAPPINGS = (
     ("docs/INDEX.md", "docs/README.md"),
 )
@@ -41,13 +48,51 @@ def parse_args() -> argparse.Namespace:
 
 def insert_or_replace_block(text: str, asset: str) -> tuple[str, str]:
     try:
-        span = locate_managed_block(
-            text, START_MARKER, END_MARKER, "根 AGENTS.md 的文档区块"
+        legacy_span = locate_managed_block(
+            text,
+            LEGACY_START_MARKER,
+            LEGACY_END_MARKER,
+            "根 AGENTS.md 的遗留文档区块",
+        )
+    except ManagedBlockError as error:
+        raise ValueError(str(error)) from error
+
+    if legacy_span is not None:
+        without_legacy = (
+            text[: legacy_span.start] + "\n" + text[legacy_span.end :]
+        )
+        try:
+            existing_span = locate_visible_asset_block(
+                without_legacy,
+                asset,
+                SECTION_TITLES,
+                "根 AGENTS.md 的 marker 外文档区块",
+            )
+        except ManagedBlockError as error:
+            raise ValueError(str(error)) from error
+        if existing_span is not None or visible_section_titles(
+            without_legacy, SECTION_TITLES
+        ):
+            raise ValueError(
+                "根 AGENTS.md 同时包含遗留 marker 区块和无 marker 文档区块"
+            )
+        return (
+            text[: legacy_span.start] + asset + text[legacy_span.end :],
+            "replaced",
+        )
+
+    try:
+        span = locate_visible_asset_block(
+            text, asset, SECTION_TITLES, "根 AGENTS.md 的文档区块"
         )
     except ManagedBlockError as error:
         raise ValueError(str(error)) from error
 
     if span is None:
+        existing_titles = visible_section_titles(text, SECTION_TITLES)
+        if existing_titles:
+            titles = "、".join(f"## {title}" for title in sorted(existing_titles))
+            raise ValueError(f"根 AGENTS.md 的无 marker 文档区块已漂移：{titles}")
         prefix = text
         newline = "\r\n" if "\r\n" in prefix else "\n"
         if prefix and not prefix.endswith(newline):
@@ -128,8 +173,8 @@ def main() -> int:
         return 2
 
     try:
-        asset_span = locate_managed_block(
-            asset, START_MARKER, END_MARKER, "AGENTS 文档区块 asset"
+        asset_span = locate_visible_asset_block(
+            asset, asset, SECTION_TITLES, "AGENTS 文档区块 asset"
         )
     except ManagedBlockError:
         asset_span = None
@@ -138,23 +183,33 @@ def main() -> int:
         or asset_span.start != 0
         or asset_span.end != len(asset)
         or not asset.endswith("\n")
+        or asset.endswith("\n\n")
+        or "\r" in asset
+        or MANAGED_COMMENT_PREFIX in asset
     ):
         print("错误：AGENTS 文档区块 asset 格式无效")
         return 2
 
+    replacements: list[str] = []
+    normalized_original = original
+    path_mappings = canonical_path_mappings(selected) + FIXED_PATH_MAPPINGS
+    for old_path, new_path in path_mappings:
+        count = normalized_original.count(old_path)
+        if count:
+            normalized_original = normalized_original.replace(old_path, new_path)
+            replacements.append(f"{old_path} → {new_path}（{count} 处）")
+
     try:
-        updated, block_action = insert_or_replace_block(original, asset)
+        updated, block_action = insert_or_replace_block(
+            normalized_original, asset
+        )
     except ValueError as error:
         print(f"错误：{error}；未修改")
         return 1
 
-    replacements: list[str] = []
-    path_mappings = canonical_path_mappings(selected) + FIXED_PATH_MAPPINGS
-    for old_path, new_path in path_mappings:
-        count = updated.count(old_path)
-        if count:
-            updated = updated.replace(old_path, new_path)
-            replacements.append(f"{old_path} → {new_path}（{count} 处）")
+    if MANAGED_COMMENT_PREFIX in updated:
+        print("错误：根 AGENTS.md 仍包含 write-project-docs HTML 边界注释；未修改")
+        return 1
 
     if updated == original:
         print("根 AGENTS.md 已符合文档区块规范；未修改")

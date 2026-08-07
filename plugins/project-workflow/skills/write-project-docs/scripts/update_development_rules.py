@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Update the managed source-size-policy link in the development rules."""
+"""Update the source-size-policy section in the development rules."""
 
 from __future__ import annotations
 
@@ -13,12 +13,18 @@ from canonical_paths import render_template, select_canonical_paths
 from managed_blocks import (
     ManagedBlockError,
     locate_managed_block,
+    locate_visible_asset_block,
     markdown_h1_lines,
+    visible_section_titles,
 )
 
 
-START_MARKER = "<!-- write-project-docs:development-source-size:start -->"
-END_MARKER = "<!-- write-project-docs:development-source-size:end -->"
+LEGACY_START_MARKER = (
+    "<!-- write-project-docs:development-source-size:start -->"
+)
+LEGACY_END_MARKER = "<!-- write-project-docs:development-source-size:end -->"
+MANAGED_COMMENT_PREFIX = "<!-- write-project-docs:"
+SECTION_TITLES = ("通用规模与职责规则",)
 
 
 def parse_args() -> argparse.Namespace:
@@ -57,14 +63,53 @@ def insert_after_title(text: str, asset: str) -> str:
 
 
 def insert_or_replace_block(text: str, asset: str) -> tuple[str, str]:
+    if markdown_h1_lines(text) != ["# 开发规范"]:
+        raise ValueError("开发规范必须包含唯一的“# 开发规范”标题")
+
     try:
-        span = locate_managed_block(
-            text, START_MARKER, END_MARKER, "开发规范的规模规则引用区块"
+        legacy_span = locate_managed_block(
+            text,
+            LEGACY_START_MARKER,
+            LEGACY_END_MARKER,
+            "开发规范的遗留规模规则引用区块",
         )
     except ManagedBlockError as error:
         raise ValueError(str(error)) from error
 
+    if legacy_span is not None:
+        without_legacy = (
+            text[: legacy_span.start] + "\n" + text[legacy_span.end :]
+        )
+        try:
+            existing_span = locate_visible_asset_block(
+                without_legacy,
+                asset,
+                SECTION_TITLES,
+                "开发规范的 marker 外规模规则引用区块",
+            )
+        except ManagedBlockError as error:
+            raise ValueError(str(error)) from error
+        if existing_span is not None or visible_section_titles(
+            without_legacy, SECTION_TITLES
+        ):
+            raise ValueError(
+                "开发规范同时包含遗留 marker 区块和无 marker 规模规则引用区块"
+            )
+        span = legacy_span
+    else:
+        try:
+            span = locate_visible_asset_block(
+                text,
+                asset,
+                SECTION_TITLES,
+                "开发规范的规模规则引用区块",
+            )
+        except ManagedBlockError as error:
+            raise ValueError(str(error)) from error
+
     if span is None:
+        if visible_section_titles(text, SECTION_TITLES):
+            raise ValueError("开发规范的无 marker 规模规则引用区块已漂移")
         return insert_after_title(text, asset), "inserted"
 
     prefix = text[: span.start]
@@ -144,8 +189,8 @@ def main() -> int:
         return 2
 
     try:
-        asset_span = locate_managed_block(
-            asset, START_MARKER, END_MARKER, "开发规范规模规则 asset"
+        asset_span = locate_visible_asset_block(
+            asset, asset, SECTION_TITLES, "开发规范规模规则 asset"
         )
     except ManagedBlockError:
         asset_span = None
@@ -154,6 +199,9 @@ def main() -> int:
         or asset_span.start != 0
         or asset_span.end != len(asset)
         or not asset.endswith("\n")
+        or asset.endswith("\n\n")
+        or "\r" in asset
+        or MANAGED_COMMENT_PREFIX in asset
     ):
         print("错误：开发规范规模规则 asset 格式无效")
         return 2
@@ -162,6 +210,10 @@ def main() -> int:
         updated, action = insert_or_replace_block(original, asset)
     except ValueError as error:
         print(f"错误：{error}；未修改")
+        return 1
+
+    if MANAGED_COMMENT_PREFIX in updated:
+        print("错误：开发规范仍包含 write-project-docs HTML 边界注释；未修改")
         return 1
 
     if updated == original:

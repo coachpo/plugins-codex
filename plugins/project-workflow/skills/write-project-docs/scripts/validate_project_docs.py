@@ -15,7 +15,12 @@ from canonical_paths import (
     render_template,
     select_canonical_paths,
 )
-from managed_blocks import ManagedBlockError, locate_managed_block, markdown_h1_lines
+from managed_blocks import (
+    ManagedBlockError,
+    locate_managed_block,
+    locate_visible_asset_block,
+    markdown_h1_lines,
+)
 
 
 COMPETING_PATHS = (
@@ -35,14 +40,28 @@ IGNORED_PARTS = {
     "target",
 }
 
-START_MARKER = "<!-- write-project-docs:shared-contributing:start -->"
-END_MARKER = "<!-- write-project-docs:shared-contributing:end -->"
-AGENTS_START_MARKER = "<!-- write-project-docs:document-navigation:start -->"
-AGENTS_END_MARKER = "<!-- write-project-docs:document-navigation:end -->"
-DEVELOPMENT_START_MARKER = (
+LEGACY_CONTRIBUTING_START_MARKER = (
+    "<!-- write-project-docs:shared-contributing:start -->"
+)
+LEGACY_CONTRIBUTING_END_MARKER = (
+    "<!-- write-project-docs:shared-contributing:end -->"
+)
+LEGACY_AGENTS_START_MARKER = (
+    "<!-- write-project-docs:document-navigation:start -->"
+)
+LEGACY_AGENTS_END_MARKER = (
+    "<!-- write-project-docs:document-navigation:end -->"
+)
+LEGACY_DEVELOPMENT_START_MARKER = (
     "<!-- write-project-docs:development-source-size:start -->"
 )
-DEVELOPMENT_END_MARKER = "<!-- write-project-docs:development-source-size:end -->"
+LEGACY_DEVELOPMENT_END_MARKER = (
+    "<!-- write-project-docs:development-source-size:end -->"
+)
+AGENTS_SECTION_TITLES = ("项目文档导航", "项目文档内容边界")
+CONTRIBUTING_SECTION_TITLES = ("通用实现原则", "完成定义")
+DEVELOPMENT_SECTION_TITLES = ("通用规模与职责规则",)
+MANAGED_COMMENT_PREFIX = "<!-- write-project-docs:"
 LEGACY_DOC_PATHS = (
     "docs/INDEX.md",
 )
@@ -78,8 +97,8 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help=(
             "把旧 canonical 路径、嵌套 AGENTS.md 引用、可能重复规则等迁移警告"
-            "视为失败；共享内容缺失、漂移或 marker 错误在普通模式也会"
-            "失败。"
+            "视为失败；共享内容缺失、漂移、区块边界错误或遗留 HTML 注释"
+            "在普通模式也会失败。"
         ),
     )
     return parser.parse_args()
@@ -123,19 +142,38 @@ def legacy_path_references(
     return references
 
 
-def complete_managed_asset_issue(
-    data: bytes, start_marker: str, end_marker: str, label: str
+def complete_section_asset_issue(
+    data: bytes, section_titles: tuple[str, ...], label: str
 ) -> str | None:
     try:
-        span = locate_managed_block(
-            data, start_marker.encode(), end_marker.encode(), label
-        )
+        text = data.decode("utf-8")
+    except UnicodeDecodeError:
+        return f"{label} 不是有效 UTF-8"
+    if MANAGED_COMMENT_PREFIX in text:
+        return f"{label} 不得包含 write-project-docs HTML 边界注释"
+    if b"\r" in data or not data.endswith(b"\n") or data.endswith(b"\n\n"):
+        return f"{label} 必须使用 LF，并保留且仅保留一个尾随换行"
+    try:
+        span = locate_visible_asset_block(text, text, section_titles, label)
     except ManagedBlockError as error:
         return str(error)
     if span is None:
-        return f"{label} 缺少 marker"
-    if span.start != 0 or span.end != len(data) or not data.endswith(b"\n"):
-        return f"{label} 的 marker 必须包围整个 asset，并保留一个尾随换行"
+        headings = "、".join(f"## {title}" for title in section_titles)
+        return f"{label} 缺少托管标题：{headings}"
+    if span.start != 0 or span.end != len(text):
+        return f"{label} 的托管标题必须覆盖整个 asset"
+    return None
+
+
+def legacy_marker_issue(
+    text: str, start_marker: str, end_marker: str, label: str
+) -> str | None:
+    try:
+        span = locate_managed_block(text, start_marker, end_marker, label)
+    except ManagedBlockError as error:
+        return str(error)
+    if span is not None or MANAGED_COMMENT_PREFIX in text:
+        return f"{label} 仍包含遗留 HTML 边界注释，必须移除"
     return None
 
 
@@ -236,10 +274,9 @@ def main() -> int:
         except ValueError as error:
             errors.append(f"skill 共享资源无效：{error}")
             expected_development_block = b""
-        development_asset_issue = complete_managed_asset_issue(
+        development_asset_issue = complete_section_asset_issue(
             expected_development_block,
-            DEVELOPMENT_START_MARKER,
-            DEVELOPMENT_END_MARKER,
+            DEVELOPMENT_SECTION_TITLES,
             "开发规范规模规则 asset",
         )
         if development_asset_issue:
@@ -253,36 +290,52 @@ def main() -> int:
     ):
         actual_development = development_rules.read_bytes()
         try:
-            span = locate_managed_block(
-                actual_development,
-                DEVELOPMENT_START_MARKER.encode(),
-                DEVELOPMENT_END_MARKER.encode(),
+            actual_development_text = actual_development.decode("utf-8")
+            expected_development_text = expected_development_block.decode("utf-8")
+        except UnicodeDecodeError:
+            errors.append(f"{selected['development_rules']} 不是有效 UTF-8")
+        else:
+            marker_issue = legacy_marker_issue(
+                actual_development_text,
+                LEGACY_DEVELOPMENT_START_MARKER,
+                LEGACY_DEVELOPMENT_END_MARKER,
                 "开发规范的规模规则引用区块",
             )
-        except ManagedBlockError as error:
-            errors.append(str(error))
-        else:
-            if span is None:
-                errors.append(
-                    f"{selected['development_rules']} 缺少规模规则引用区块"
-                )
-            elif actual_development[: span.start] not in {
-                "# 开发规范\n\n".encode("utf-8"),
-                "# 开发规范\r\n\r\n".encode("utf-8"),
-            }:
-                errors.append(
-                    f"{selected['development_rules']} 的规模规则引用区块"
-                    "必须紧跟标题"
-                )
-            elif (
-                actual_development[span.start : span.end]
-                != expected_development_block
-                or actual_development.count(expected_development_block) != 1
-            ):
-                errors.append(
-                    f"{selected['development_rules']} 的规模规则引用区块已漂移，"
-                    "必须用 asset 完整替换"
-                )
+            if marker_issue:
+                errors.append(marker_issue)
+            else:
+                try:
+                    span = locate_visible_asset_block(
+                        actual_development_text,
+                        expected_development_text,
+                        DEVELOPMENT_SECTION_TITLES,
+                        "开发规范的规模规则引用区块",
+                    )
+                except ManagedBlockError as error:
+                    errors.append(str(error))
+                else:
+                    if span is None:
+                        errors.append(
+                            f"{selected['development_rules']} 缺少规模规则引用区块"
+                        )
+                    elif actual_development_text[: span.start] not in {
+                        "# 开发规范\n\n",
+                        "# 开发规范\r\n\r\n",
+                    }:
+                        errors.append(
+                            f"{selected['development_rules']} 的规模规则引用区块"
+                            "必须紧跟标题"
+                        )
+                    elif (
+                        actual_development_text[span.start : span.end]
+                        != expected_development_text
+                        or actual_development_text.count(expected_development_text)
+                        != 1
+                    ):
+                        errors.append(
+                            f"{selected['development_rules']} 的规模规则引用区块"
+                            "已漂移，必须用 asset 完整替换"
+                        )
 
     source_asset = skill_root / "assets" / "源代码规模与职责规则.md"
     project_source_rules = root / selected["source_size_rules"]
@@ -309,14 +362,16 @@ def main() -> int:
         errors.append("skill 缺少普通共享资源：assets/CONTRIBUTING-通用区块.md")
     else:
         try:
-            expected = render_template(
+            expected_contributing_block = render_template(
                 contributing_asset.read_bytes(), selected, "CONTRIBUTING 共享 asset"
             )
         except ValueError as error:
             errors.append(f"skill 共享资源无效：{error}")
-            expected = b""
-        asset_issue = complete_managed_asset_issue(
-            expected, START_MARKER, END_MARKER, "CONTRIBUTING 共享 asset"
+            expected_contributing_block = b""
+        asset_issue = complete_section_asset_issue(
+            expected_contributing_block,
+            CONTRIBUTING_SECTION_TITLES,
+            "CONTRIBUTING 共享 asset",
         )
         if asset_issue:
             errors.append(f"skill 共享资源无效：{asset_issue}")
@@ -326,23 +381,43 @@ def main() -> int:
         and not asset_issue
         and contributing.is_file()
     ):
-        actual = contributing.read_bytes()
         try:
-            span = locate_managed_block(
-                actual,
-                START_MARKER.encode(),
-                END_MARKER.encode(),
+            actual_contributing_text = contributing.read_bytes().decode("utf-8")
+            expected_contributing_text = expected_contributing_block.decode("utf-8")
+        except UnicodeDecodeError:
+            errors.append("CONTRIBUTING.md 不是有效 UTF-8")
+        else:
+            marker_issue = legacy_marker_issue(
+                actual_contributing_text,
+                LEGACY_CONTRIBUTING_START_MARKER,
+                LEGACY_CONTRIBUTING_END_MARKER,
                 "CONTRIBUTING.md 的共享区块",
             )
-        except ManagedBlockError as error:
-            errors.append(str(error))
-        else:
-            if span is None:
-                errors.append("CONTRIBUTING.md 缺少共享 contribution asset")
-            elif actual[span.start : span.end] != expected or actual.count(expected) != 1:
-                errors.append(
-                    "CONTRIBUTING.md 的共享区块已漂移，必须用 asset 完整替换"
-                )
+            if marker_issue:
+                errors.append(marker_issue)
+            else:
+                try:
+                    span = locate_visible_asset_block(
+                        actual_contributing_text,
+                        expected_contributing_text,
+                        CONTRIBUTING_SECTION_TITLES,
+                        "CONTRIBUTING.md 的共享区块",
+                    )
+                except ManagedBlockError as error:
+                    errors.append(str(error))
+                else:
+                    if span is None:
+                        errors.append("CONTRIBUTING.md 缺少共享 contribution asset")
+                    elif (
+                        actual_contributing_text[span.start : span.end]
+                        != expected_contributing_text
+                        or actual_contributing_text.count(expected_contributing_text)
+                        != 1
+                    ):
+                        errors.append(
+                            "CONTRIBUTING.md 的共享区块已漂移，"
+                            "必须用 asset 完整替换"
+                        )
 
     agents_asset = skill_root / "assets" / "AGENTS-文档导航区块.md"
     root_agents = root / "AGENTS.md"
@@ -351,16 +426,15 @@ def main() -> int:
         errors.append("skill 缺少普通共享资源：assets/AGENTS-文档导航区块.md")
     else:
         try:
-            expected = render_template(
+            expected_agents_block = render_template(
                 agents_asset.read_bytes(), selected, "AGENTS 文档区块 asset"
             )
         except ValueError as error:
             errors.append(f"skill 共享资源无效：{error}")
-            expected = b""
-        agents_asset_issue = complete_managed_asset_issue(
-            expected,
-            AGENTS_START_MARKER,
-            AGENTS_END_MARKER,
+            expected_agents_block = b""
+        agents_asset_issue = complete_section_asset_issue(
+            expected_agents_block,
+            AGENTS_SECTION_TITLES,
             "AGENTS 文档区块 asset",
         )
         if agents_asset_issue:
@@ -377,27 +451,43 @@ def main() -> int:
             warnings.append("根 AGENTS.md 不是普通文件，未验证或管理其文档区块")
         else:
             actual = root_agents.read_bytes()
-            agents_text = actual.decode("utf-8", errors="replace")
             try:
-                span = locate_managed_block(
-                    actual,
-                    AGENTS_START_MARKER.encode(),
-                    AGENTS_END_MARKER.encode(),
+                agents_text = actual.decode("utf-8")
+                expected_agents_text = expected_agents_block.decode("utf-8")
+            except UnicodeDecodeError:
+                errors.append("AGENTS.md 不是有效 UTF-8")
+                agents_text = actual.decode("utf-8", errors="replace")
+            else:
+                marker_issue = legacy_marker_issue(
+                    agents_text,
+                    LEGACY_AGENTS_START_MARKER,
+                    LEGACY_AGENTS_END_MARKER,
                     "根 AGENTS.md 的文档区块",
                 )
-            except ManagedBlockError as error:
-                errors.append(str(error))
-            else:
-                if span is None:
-                    errors.append("现有根 AGENTS.md 缺少文档区块 asset")
-                elif (
-                    actual[span.start : span.end] != expected
-                    or actual.count(expected) != 1
-                ):
-                    errors.append(
-                        "根 AGENTS.md 的文档区块已漂移，"
-                        "必须用 asset 完整替换"
-                    )
+                if marker_issue:
+                    errors.append(marker_issue)
+                else:
+                    try:
+                        span = locate_visible_asset_block(
+                            agents_text,
+                            expected_agents_text,
+                            AGENTS_SECTION_TITLES,
+                            "根 AGENTS.md 的文档区块",
+                        )
+                    except ManagedBlockError as error:
+                        errors.append(str(error))
+                    else:
+                        if span is None:
+                            errors.append("现有根 AGENTS.md 缺少文档区块 asset")
+                        elif (
+                            agents_text[span.start : span.end]
+                            != expected_agents_text
+                            or agents_text.count(expected_agents_text) != 1
+                        ):
+                            errors.append(
+                                "根 AGENTS.md 的文档区块已漂移，"
+                                "必须用 asset 完整替换"
+                            )
             for line_number, legacy_path in legacy_path_references(
                 agents_text, selected
             ):
