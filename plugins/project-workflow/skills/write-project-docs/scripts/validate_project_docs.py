@@ -24,7 +24,7 @@ from contributing_blocks import (
 )
 from managed_blocks import (
     ManagedBlockError,
-    locate_visible_asset_block,
+    locate_managed_block,
     markdown_h1_lines,
 )
 
@@ -46,9 +46,20 @@ IGNORED_PARTS = {
     "target",
 }
 
-AGENTS_SECTION_TITLES = ("项目文档导航", "项目文档内容边界")
-CONTRIBUTING_SECTION_TITLES = ("通用设计原则", "通用实现原则", "完成定义")
-DEVELOPMENT_SECTION_TITLES = ("通用规模与职责规则",)
+CONTRIBUTING_START_MARKER = (
+    "<!-- write-project-docs:shared-contributing:start -->"
+)
+CONTRIBUTING_END_MARKER = (
+    "<!-- write-project-docs:shared-contributing:end -->"
+)
+AGENTS_START_MARKER = "<!-- write-project-docs:document-navigation:start -->"
+AGENTS_END_MARKER = "<!-- write-project-docs:document-navigation:end -->"
+DEVELOPMENT_START_MARKER = (
+    "<!-- write-project-docs:development-source-size:start -->"
+)
+DEVELOPMENT_END_MARKER = (
+    "<!-- write-project-docs:development-source-size:end -->"
+)
 LEGACY_DOC_PATHS = (
     "docs/INDEX.md",
 )
@@ -128,8 +139,8 @@ def legacy_path_references(
     return references
 
 
-def complete_section_asset_issue(
-    data: bytes, section_titles: tuple[str, ...], label: str
+def complete_managed_asset_issue(
+    data: bytes, start_marker: str, end_marker: str, label: str
 ) -> str | None:
     try:
         text = data.decode("utf-8")
@@ -138,14 +149,15 @@ def complete_section_asset_issue(
     if b"\r" in data or not data.endswith(b"\n") or data.endswith(b"\n\n"):
         return f"{label} 必须使用 LF，并保留且仅保留一个尾随换行"
     try:
-        span = locate_visible_asset_block(text, text, section_titles, label)
+        span = locate_managed_block(
+            data, start_marker.encode(), end_marker.encode(), label
+        )
     except ManagedBlockError as error:
         return str(error)
     if span is None:
-        headings = "、".join(f"## {title}" for title in section_titles)
-        return f"{label} 缺少托管标题：{headings}"
-    if span.start != 0 or span.end != len(text):
-        return f"{label} 的托管标题必须覆盖整个 asset"
+        return f"{label} 缺少 marker"
+    if span.start != 0 or span.end != len(data):
+        return f"{label} 的 marker 必须包围整个 asset"
     return None
 
 
@@ -259,9 +271,10 @@ def main() -> int:
         except ValueError as error:
             errors.append(f"skill 共享资源无效：{error}")
             expected_development_block = b""
-        development_asset_issue = complete_section_asset_issue(
+        development_asset_issue = complete_managed_asset_issue(
             expected_development_block,
-            DEVELOPMENT_SECTION_TITLES,
+            DEVELOPMENT_START_MARKER,
+            DEVELOPMENT_END_MARKER,
             "开发规范规模规则 asset",
         )
         if development_asset_issue:
@@ -275,38 +288,31 @@ def main() -> int:
     ):
         actual_development = development_rules.read_bytes()
         try:
-            actual_development_text = actual_development.decode("utf-8")
-            expected_development_text = expected_development_block.decode("utf-8")
-        except UnicodeDecodeError:
-            errors.append(f"{selected['development_rules']} 不是有效 UTF-8")
+            span = locate_managed_block(
+                actual_development,
+                DEVELOPMENT_START_MARKER.encode(),
+                DEVELOPMENT_END_MARKER.encode(),
+                "开发规范的规模规则引用区块",
+            )
+        except ManagedBlockError as error:
+            errors.append(str(error))
         else:
-            try:
-                span = locate_visible_asset_block(
-                    actual_development_text,
-                    expected_development_text,
-                    DEVELOPMENT_SECTION_TITLES,
-                    "开发规范的规模规则引用区块",
-                )
-            except ManagedBlockError as error:
-                errors.append(str(error))
-            else:
                 if span is None:
                     errors.append(
                         f"{selected['development_rules']} 缺少规模规则引用区块"
                     )
-                elif actual_development_text[: span.start] not in {
-                    "# 开发规范\n\n",
-                    "# 开发规范\r\n\r\n",
+                elif actual_development[: span.start] not in {
+                    "# 开发规范\n\n".encode("utf-8"),
+                    "# 开发规范\r\n\r\n".encode("utf-8"),
                 }:
                     errors.append(
                         f"{selected['development_rules']} 的规模规则引用区块"
                         "必须紧跟标题"
                     )
                 elif (
-                    actual_development_text[span.start : span.end]
-                    != expected_development_text
-                    or actual_development_text.count(expected_development_text)
-                    != 1
+                    actual_development[span.start : span.end]
+                    != expected_development_block
+                    or actual_development.count(expected_development_block) != 1
                 ):
                     errors.append(
                         f"{selected['development_rules']} 的规模规则引用区块"
@@ -383,9 +389,10 @@ def main() -> int:
             errors.append(f"skill 共享资源无效：{error}")
         else:
             expected_contributing_block = expected_contributing_text.encode("utf-8")
-            asset_issue = complete_section_asset_issue(
+            asset_issue = complete_managed_asset_issue(
                 expected_contributing_block,
-                CONTRIBUTING_SECTION_TITLES,
+                CONTRIBUTING_START_MARKER,
+                CONTRIBUTING_END_MARKER,
                 "CONTRIBUTING 组合 asset",
             )
             if asset_issue:
@@ -405,10 +412,10 @@ def main() -> int:
             errors.append("CONTRIBUTING.md 不是有效 UTF-8")
         else:
             try:
-                span = locate_visible_asset_block(
+                span = locate_managed_block(
                     actual_contributing_text,
-                    expected_contributing_text,
-                    CONTRIBUTING_SECTION_TITLES,
+                    CONTRIBUTING_START_MARKER,
+                    CONTRIBUTING_END_MARKER,
                     "CONTRIBUTING.md 的共享区块",
                 )
             except ManagedBlockError as error:
@@ -466,9 +473,10 @@ def main() -> int:
         except ValueError as error:
             errors.append(f"skill 共享资源无效：{error}")
             expected_agents_block = b""
-        agents_asset_issue = complete_section_asset_issue(
+        agents_asset_issue = complete_managed_asset_issue(
             expected_agents_block,
-            AGENTS_SECTION_TITLES,
+            AGENTS_START_MARKER,
+            AGENTS_END_MARKER,
             "AGENTS 文档区块 asset",
         )
         if agents_asset_issue:
@@ -493,10 +501,10 @@ def main() -> int:
                 agents_text = actual.decode("utf-8", errors="replace")
             else:
                 try:
-                    span = locate_visible_asset_block(
+                    span = locate_managed_block(
                         agents_text,
-                        expected_agents_text,
-                        AGENTS_SECTION_TITLES,
+                        AGENTS_START_MARKER,
+                        AGENTS_END_MARKER,
                         "根 AGENTS.md 的文档区块",
                     )
                 except ManagedBlockError as error:

@@ -16,11 +16,13 @@ from canonical_paths import (
 )
 from managed_blocks import (
     ManagedBlockError,
-    locate_visible_asset_block,
+    locate_managed_block,
     visible_section_titles,
 )
 
 
+START_MARKER = "<!-- write-project-docs:document-navigation:start -->"
+END_MARKER = "<!-- write-project-docs:document-navigation:end -->"
 SECTION_TITLES = ("项目文档导航", "项目文档内容边界")
 FIXED_PATH_MAPPINGS = (
     ("docs/INDEX.md", "docs/README.md"),
@@ -44,8 +46,8 @@ def parse_args() -> argparse.Namespace:
 
 def insert_or_replace_block(text: str, asset: str) -> tuple[str, str]:
     try:
-        span = locate_visible_asset_block(
-            text, asset, SECTION_TITLES, "根 AGENTS.md 的文档区块"
+        span = locate_managed_block(
+            text, START_MARKER, END_MARKER, "根 AGENTS.md 的文档区块"
         )
     except ManagedBlockError as error:
         raise ValueError(str(error)) from error
@@ -135,11 +137,12 @@ def main() -> int:
         return 2
 
     try:
-        asset_span = locate_visible_asset_block(
-            asset, asset, SECTION_TITLES, "AGENTS 文档区块 asset"
+        asset_span = locate_managed_block(
+            asset, START_MARKER, END_MARKER, "AGENTS 文档区块 asset"
         )
-    except ManagedBlockError:
-        asset_span = None
+    except ManagedBlockError as error:
+        print(f"错误：{error}")
+        return 2
     if (
         asset_span is None
         or asset_span.start != 0

@@ -45,7 +45,7 @@ description: 基于仓库证据审查、创建、维护、归并、标准化或�
 6. 为每类双语权威选择一个路径。两个变体同时存在时，只读比较并列出独有事实；询问保留路径和清理授权，获得决定前只暂停该权威的修改，不删除、不合并、不创建第三份文件。其他独立工作可以继续。
 7. 把每项已核实且仍有效的事实或政策映射到一个权威文档，保留不冲突的项目约定；创建缺失文件并对现有文件做最小化更新。必需文件证据不足时先做一次最小补充取证，仍不足则按停止条件处理，不创建空壳或虚构内容。
 8. 按“共享资源”渲染规模规则和开发规范链接；先按已核实事实更新 `STATUS.md`。状态为“启用”时还须完成上述语义核实，然后才运行 `python3 <skill-dir>/scripts/update_contributing.py <project-root>` 组合 `CONTRIBUTING.md`；未启用或缺失时可直接运行。最后按条件更新根 `AGENTS.md` 导航区块。
-9. 运行 `python3 <skill-dir>/scripts/validate_project_docs.py <project-root>` 和适用的仓库文档检查，修复范围内的普通错误。迁移或清理任务还应运行 `--strict` 诊断；运行只读检查不需要清理授权，实际清理仍受授权边界约束。
+9. 运行 `python3 <skill-dir>/scripts/validate_project_docs.py <project-root>` 和适用的仓库文档检查，修复范围内的普通错误。普通验证检查规范文件完整性、MVP 状态、共享资源与组合结果、marker 区块漂移、重复区块和断链；旧路径、嵌套指令引用和疑似重复的规模规则只产生迁移警告。迁移或清理任务还应运行 `--strict` 诊断；运行只读检查不需要清理授权，实际清理仍受授权边界约束。
 10. 检查精确 diff，确认脚本没有修改托管区块或标准路径替换范围之外的内容；越界变化视为验证失败并在授权范围内修正。
 
 ## 共享资源
@@ -54,9 +54,10 @@ description: 基于仓库证据审查、创建、维护、归并、标准化或�
 
 - `scripts/canonical_paths.py` 解析双语权威路径并渲染资产中声明的 `{{...}}` 变量；发现双语冲突时不调用写入脚本。
 - `assets/源代码规模与职责规则.md` 是规模规则文档的完整模板，只替换已声明变量，保持 UTF-8、LF 和一个结尾换行。
-- 使用 `scripts/update_development_rules.py` 更新开发规范中的规模规则托管区块，不手工编辑该区块。
-- `assets/CONTRIBUTING-通用区块.md` 始终作为基础区块；仅在显式启用状态下，由 `scripts/update_contributing.py` 把 `assets/CONTRIBUTING-MVP-快速验证区块.md` 的唯一顶层 `### MVP 快速验证` 插入“通用实现原则”末尾。脚本只机械解析与组合，不核实启用依据。
-- 只有根 `AGENTS.md` 满足写入条件时，才使用 `scripts/update_agents_navigation.py` 更新文档导航区块和标准路径引用；运行后检查精确 diff。
+- 共享区块 asset 由 `<!-- write-project-docs:<名称>:start -->` 与 `<!-- write-project-docs:<名称>:end -->` HTML 边界注释包裹完整正文，写入目标文件时保留这些标记。脚本用 marker 定位并完整替换已有区块；marker 缺失、重复、顺序错误或位于代码围栏或 HTML block 内时必须拒绝自动修改，不得猜测范围。
+- 使用 `scripts/update_development_rules.py` 更新开发规范中的规模规则托管区块，不手工编辑该区块；已有 `<!-- write-project-docs:development-source-size:start -->` 与 `<!-- write-project-docs:development-source-size:end -->` 边界时完整替换，否则紧跟 `# 开发规范` 标题只插入一次。
+- `assets/CONTRIBUTING-通用区块.md` 始终作为基础区块；仅在显式启用状态下，由 `scripts/update_contributing.py` 把 `assets/CONTRIBUTING-MVP-快速验证区块.md` 的唯一顶层 `### MVP 快速验证` 插入“通用实现原则”末尾。脚本只机械解析与组合，不核实启用依据；组合结果保留 `<!-- write-project-docs:shared-contributing:start -->` 与 `<!-- write-project-docs:shared-contributing:end -->` 边界，已有边界时完整替换，否则在合适位置只插入一次。
+- 只有根 `AGENTS.md` 满足写入条件时，才使用 `scripts/update_agents_navigation.py` 更新文档导航区块和标准路径引用；已有 `<!-- write-project-docs:document-navigation:start -->` 与 `<!-- write-project-docs:document-navigation:end -->` 边界时完整替换，否则在合适位置只插入一次；运行后检查精确 diff。
 - 不在 `CONTRIBUTING.md` 或开发规范中复制规模阈值，只链接选定的规模规则文档。
 
 ## 停止与交付

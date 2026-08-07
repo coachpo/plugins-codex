@@ -12,12 +12,14 @@ from pathlib import Path
 from canonical_paths import render_template, select_canonical_paths
 from managed_blocks import (
     ManagedBlockError,
-    locate_visible_asset_block,
+    locate_managed_block,
     markdown_h1_lines,
     visible_section_titles,
 )
 
 
+START_MARKER = "<!-- write-project-docs:development-source-size:start -->"
+END_MARKER = "<!-- write-project-docs:development-source-size:end -->"
 SECTION_TITLES = ("通用规模与职责规则",)
 
 
@@ -61,11 +63,8 @@ def insert_or_replace_block(text: str, asset: str) -> tuple[str, str]:
         raise ValueError("开发规范必须包含唯一的“# 开发规范”标题")
 
     try:
-        span = locate_visible_asset_block(
-            text,
-            asset,
-            SECTION_TITLES,
-            "开发规范的规模规则引用区块",
+        span = locate_managed_block(
+            text, START_MARKER, END_MARKER, "开发规范的规模规则引用区块"
         )
     except ManagedBlockError as error:
         raise ValueError(str(error)) from error
@@ -152,11 +151,12 @@ def main() -> int:
         return 2
 
     try:
-        asset_span = locate_visible_asset_block(
-            asset, asset, SECTION_TITLES, "开发规范规模规则 asset"
+        asset_span = locate_managed_block(
+            asset, START_MARKER, END_MARKER, "开发规范规模规则 asset"
         )
-    except ManagedBlockError:
-        asset_span = None
+    except ManagedBlockError as error:
+        print(f"错误：{error}")
+        return 2
     if (
         asset_span is None
         or asset_span.start != 0

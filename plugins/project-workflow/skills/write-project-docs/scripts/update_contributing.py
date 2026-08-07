@@ -18,11 +18,14 @@ from contributing_blocks import (
 )
 from managed_blocks import (
     ManagedBlockError,
-    locate_visible_asset_block,
+    locate_managed_block,
+    visible_atx_headings,
     visible_section_titles,
 )
 
 
+START_MARKER = "<!-- write-project-docs:shared-contributing:start -->"
+END_MARKER = "<!-- write-project-docs:shared-contributing:end -->"
 SECTION_TITLES = ("通用设计原则", "通用实现原则", "完成定义")
 
 
@@ -43,20 +46,20 @@ def complete_asset_issue(asset: str) -> str | None:
     if "\r" in asset or not asset.endswith("\n") or asset.endswith("\n\n"):
         return "CONTRIBUTING 组合 asset 必须使用 LF，并仅保留一个尾随换行"
     try:
-        span = locate_visible_asset_block(
-            asset, asset, SECTION_TITLES, "CONTRIBUTING 组合 asset"
+        span = locate_managed_block(
+            asset, START_MARKER, END_MARKER, "CONTRIBUTING 组合 asset"
         )
     except ManagedBlockError as error:
         return str(error)
     if span is None or span.start != 0 or span.end != len(asset):
-        return "CONTRIBUTING 组合 asset 的托管标题必须覆盖整个 asset"
+        return "CONTRIBUTING 组合 asset 的 marker 必须包围整个 asset"
     return None
 
 
 def insert_or_replace_block(text: str, asset: str) -> tuple[str, str]:
     try:
-        span = locate_visible_asset_block(
-            text, asset, SECTION_TITLES, "CONTRIBUTING.md 的共享区块"
+        span = locate_managed_block(
+            text, START_MARKER, END_MARKER, "CONTRIBUTING.md 的共享区块"
         )
     except ManagedBlockError as error:
         raise ValueError(str(error)) from error
@@ -89,6 +92,19 @@ def insert_or_replace_block(text: str, asset: str) -> tuple[str, str]:
     ]
     if len(inside_positions) > 1:
         raise ValueError("CONTRIBUTING.md 的共享区块包含重复 MVP 快速验证标题")
+    outside_titles = visible_section_titles(
+        text[: span.start] + text[span.end :], SECTION_TITLES
+    )
+    if outside_titles:
+        titles = "、".join(f"## {title}" for title in sorted(outside_titles))
+        raise ValueError(f"CONTRIBUTING.md 在共享区块外包含托管标题：{titles}")
+    h2_titles = [
+        title
+        for level, title, _ in visible_atx_headings(text[span.start : span.end])
+        if level == 2
+    ]
+    if h2_titles != list(SECTION_TITLES):
+        raise ValueError("CONTRIBUTING.md 的共享区块标题顺序错误")
     return text[: span.start] + asset + text[span.end :], "replaced"
 
 

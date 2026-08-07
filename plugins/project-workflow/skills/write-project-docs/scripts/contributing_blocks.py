@@ -9,7 +9,7 @@ from canonical_paths import render_template
 from managed_blocks import (
     ManagedBlockError,
     has_visible_h1_or_h2,
-    locate_visible_asset_block,
+    locate_managed_block,
     visible_atx_heading_positions,
     visible_atx_headings,
     visible_markdown_lines,
@@ -66,6 +66,10 @@ def parse_mvp_mode(status_text: str) -> MvpMode:
     )
 
 
+START_MARKER = "<!-- write-project-docs:shared-contributing:start -->"
+END_MARKER = "<!-- write-project-docs:shared-contributing:end -->"
+
+
 def validate_base_asset(base_asset: str) -> None:
     """Require one complete base block without an embedded MVP section."""
 
@@ -78,16 +82,13 @@ def validate_base_asset(base_asset: str) -> None:
             "CONTRIBUTING 基础 asset 必须使用 LF，并仅保留一个尾随换行"
         )
     try:
-        span = locate_visible_asset_block(
-            base_asset,
-            base_asset,
-            CONTRIBUTING_SECTION_TITLES,
-            "CONTRIBUTING 基础 asset",
+        span = locate_managed_block(
+            base_asset, START_MARKER, END_MARKER, "CONTRIBUTING 基础 asset"
         )
     except ManagedBlockError as error:
         raise ValueError(str(error)) from error
     if span is None or span.start != 0 or span.end != len(base_asset):
-        raise ValueError("CONTRIBUTING 基础 asset 的托管标题必须覆盖整个 asset")
+        raise ValueError("CONTRIBUTING 基础 asset 的 marker 必须包围整个 asset")
     if base_asset.count(COMPLETION_HEADING) != 1:
         raise ValueError("CONTRIBUTING 基础 asset 必须且只能包含一个完成定义标题")
     if mvp_heading_positions(base_asset):
