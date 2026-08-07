@@ -1,13 +1,13 @@
 {
   "name": "stitch-ui-ux-codex",
-  "version": "0.1.1",
+  "version": "0.1.1+codex.20260804082017",
   "description": "Design, review, iterate, and retrieve UI/UX deliverables with a separately configured official Google Stitch Remote MCP.",
   "author": {
     "name": "coachpo",
     "url": "https://github.com/coachpo"
   },
-  "homepage": "https://github.com/coachpo/stitch-ui-ux-codex#readme",
-  "repository": "https://github.com/coachpo/stitch-ui-ux-codex",
+  "homepage": "https://github.com/coachpo/plugins-codex/tree/main/plugins/stitch-ui-ux-codex#readme",
+  "repository": "https://github.com/coachpo/plugins-codex",
   "license": "Apache-2.0",
   "keywords": [
     "stitch",
@@ -34,6 +34,6 @@
       "\u628a\u9009\u5b9a\u7684 Stitch \u5c4f\u5e55\u8f6c\u6362\u6210\u53ef\u7ef4\u62a4\u7684 React \u7ec4\u4ef6\u3002"
     ],
     "brandColor": "#1A73E8",
-    "websiteURL": "https://github.com/coachpo/stitch-ui-ux-codex"
+    "websiteURL": "https://github.com/coachpo/plugins-codex/tree/main/plugins/stitch-ui-ux-codex"
   }
 }
