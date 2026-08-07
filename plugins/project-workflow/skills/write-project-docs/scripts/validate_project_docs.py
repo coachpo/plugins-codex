@@ -40,7 +40,7 @@ IGNORED_PARTS = {
 }
 
 AGENTS_SECTION_TITLES = ("项目文档导航", "项目文档内容边界")
-CONTRIBUTING_SECTION_TITLES = ("通用实现原则", "完成定义")
+CONTRIBUTING_SECTION_TITLES = ("通用设计原则", "通用实现原则", "完成定义")
 DEVELOPMENT_SECTION_TITLES = ("通用规模与职责规则",)
 LEGACY_DOC_PATHS = (
     "docs/INDEX.md",
