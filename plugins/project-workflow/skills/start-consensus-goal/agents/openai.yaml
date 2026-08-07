@@ -1,7 +1,7 @@
 interface:
   display_name: "Start Consensus Goal"
   short_description: "把讨论中已接受的决定整理为可验证的中文 GOAL 并启动"
-  default_prompt: "使用 $project-workflow:start-consensus-goal 将当前讨论中已接受的决定整理为可验证的中文 GOAL，并立即启动持续执行。"
+  default_prompt: "使用 $project-workflow:start-consensus-goal 将当前讨论中已接受的决定整理为可验证的中文 GOAL，使用 Codex Goal 机制启动并持续执行，直到完成标准已验证或遇到正当阻塞。"
 
 policy:
   allow_implicit_invocation: false
