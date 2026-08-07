@@ -17,5 +17,10 @@ The 2026-08-03 update optimizes the skill contracts for GPT-5.6 prompting:
 leaner instructions, contextual design decisions, bounded tool routing,
 intentional image-detail selection, and non-conflicting completion rules.
 
+The 2026-08-05 update aligns all five skills with the current callable Stitch
+schemas, adds evidence-based degraded states and recoverable bounded workflow
+handoffs, hardens local artifact retrieval, and adds minimal Codex skill UI
+metadata without bundling authentication or an MCP server.
+
 This derivative plugin is not an officially supported Google product. Google
 and Stitch names remain the property of their respective owners.

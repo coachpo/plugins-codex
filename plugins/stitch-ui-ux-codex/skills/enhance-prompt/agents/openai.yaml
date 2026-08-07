@@ -1,0 +1,4 @@
+interface:
+  display_name: "Enhance Stitch Prompt"
+  short_description: "把模糊 UI 需求整理为可执行、响应式且无障碍的 Stitch 提示"
+  default_prompt: "使用 $stitch-ui-ux-codex:enhance-prompt 把这段 UI 需求整理为可直接交给 Stitch 的提示。"

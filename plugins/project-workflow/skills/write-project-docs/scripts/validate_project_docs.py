@@ -15,6 +15,13 @@ from canonical_paths import (
     render_template,
     select_canonical_paths,
 )
+from contributing_blocks import (
+    MvpMode,
+    compose_contributing_block,
+    mvp_heading_positions,
+    parse_mvp_mode,
+    render_contributing_assets,
+)
 from managed_blocks import (
     ManagedBlockError,
     locate_visible_asset_block,
@@ -192,6 +199,19 @@ def main() -> int:
         elif path.is_symlink():
             errors.append(f"固定文档不得使用符号链接：{relative}")
 
+    mvp_mode: MvpMode | None = None
+    status_path = root / "STATUS.md"
+    if status_path.is_file() and not status_path.is_symlink():
+        try:
+            status_text = status_path.read_bytes().decode("utf-8")
+        except UnicodeDecodeError:
+            errors.append("STATUS.md 不是有效 UTF-8")
+        else:
+            try:
+                mvp_mode = parse_mvp_mode(status_text)
+            except ValueError as error:
+                errors.append(str(error))
+
     selected, path_errors = select_canonical_paths(root)
     errors.extend(path_errors)
     for relative in selected.values():
@@ -312,30 +332,71 @@ def main() -> int:
                 )
 
     contributing_asset = skill_root / "assets" / "CONTRIBUTING-通用区块.md"
+    contributing_mvp_asset = (
+        skill_root / "assets" / "CONTRIBUTING-MVP-快速验证区块.md"
+    )
     contributing = root / "CONTRIBUTING.md"
     asset_issue: str | None = None
-    if contributing_asset.is_symlink() or not contributing_asset.is_file():
+    expected_base_block = b""
+    expected_mvp_block = b""
+    expected_contributing_block = b""
+    base_asset_ready = (
+        contributing_asset.is_file() and not contributing_asset.is_symlink()
+    )
+    mvp_asset_ready = (
+        contributing_mvp_asset.is_file()
+        and not contributing_mvp_asset.is_symlink()
+    )
+    if not base_asset_ready:
         errors.append("skill 缺少普通共享资源：assets/CONTRIBUTING-通用区块.md")
-    else:
+    if not mvp_asset_ready:
+        errors.append(
+            "skill 缺少普通共享资源：assets/CONTRIBUTING-MVP-快速验证区块.md"
+        )
+    if base_asset_ready and mvp_asset_ready:
         try:
-            expected_contributing_block = render_template(
-                contributing_asset.read_bytes(), selected, "CONTRIBUTING 共享 asset"
+            expected_base_text, expected_mvp_text = render_contributing_assets(
+                contributing_asset.read_bytes(),
+                contributing_mvp_asset.read_bytes(),
+                selected,
             )
         except ValueError as error:
+            asset_issue = str(error)
             errors.append(f"skill 共享资源无效：{error}")
-            expected_contributing_block = b""
-        asset_issue = complete_section_asset_issue(
-            expected_contributing_block,
-            CONTRIBUTING_SECTION_TITLES,
-            "CONTRIBUTING 共享 asset",
-        )
-        if asset_issue:
-            errors.append(f"skill 共享资源无效：{asset_issue}")
+        else:
+            expected_base_block = expected_base_text.encode("utf-8")
+            expected_mvp_block = expected_mvp_text.encode("utf-8")
+    if (
+        not asset_issue
+        and expected_base_block
+        and expected_mvp_block
+        and mvp_mode is not None
+    ):
+        try:
+            expected_contributing_text = compose_contributing_block(
+                expected_base_block.decode("utf-8"),
+                expected_mvp_block.decode("utf-8"),
+                mvp_mode=mvp_mode,
+            )
+        except (UnicodeDecodeError, ValueError) as error:
+            asset_issue = str(error)
+            errors.append(f"skill 共享资源无效：{error}")
+        else:
+            expected_contributing_block = expected_contributing_text.encode("utf-8")
+            asset_issue = complete_section_asset_issue(
+                expected_contributing_block,
+                CONTRIBUTING_SECTION_TITLES,
+                "CONTRIBUTING 组合 asset",
+            )
+            if asset_issue:
+                errors.append(f"skill 共享资源无效：{asset_issue}")
     if (
         contributing_asset.is_file()
         and not contributing_asset.is_symlink()
         and not asset_issue
+        and expected_contributing_block
         and contributing.is_file()
+        and not contributing.is_symlink()
     ):
         try:
             actual_contributing_text = contributing.read_bytes().decode("utf-8")
@@ -353,18 +414,44 @@ def main() -> int:
             except ManagedBlockError as error:
                 errors.append(str(error))
             else:
+                mvp_positions = mvp_heading_positions(actual_contributing_text)
                 if span is None:
                     errors.append("CONTRIBUTING.md 缺少共享 contribution asset")
-                elif (
-                    actual_contributing_text[span.start : span.end]
-                    != expected_contributing_text
-                    or actual_contributing_text.count(expected_contributing_text)
-                    != 1
-                ):
-                    errors.append(
-                        "CONTRIBUTING.md 的共享区块已漂移，"
-                        "必须用 asset 完整替换"
-                    )
+                    if mvp_positions:
+                        errors.append(
+                            "CONTRIBUTING.md 在托管区块外包含"
+                            "“### MVP 快速验证”"
+                        )
+                else:
+                    outside_mvp = [
+                        position
+                        for position in mvp_positions
+                        if not (span.start <= position < span.end)
+                    ]
+                    inside_mvp = [
+                        position
+                        for position in mvp_positions
+                        if span.start <= position < span.end
+                    ]
+                    if outside_mvp:
+                        errors.append(
+                            "CONTRIBUTING.md 在托管区块外包含"
+                            "“### MVP 快速验证”"
+                        )
+                    if len(inside_mvp) > 1:
+                        errors.append(
+                            "CONTRIBUTING.md 的共享区块包含重复 MVP 快速验证标题"
+                        )
+                    if (
+                        actual_contributing_text[span.start : span.end]
+                        != expected_contributing_text
+                        or actual_contributing_text.count(expected_contributing_text)
+                        != 1
+                    ):
+                        errors.append(
+                            "CONTRIBUTING.md 的共享区块已漂移，"
+                            "必须用 asset 完整替换"
+                        )
 
     agents_asset = skill_root / "assets" / "AGENTS-文档导航区块.md"
     root_agents = root / "AGENTS.md"
@@ -435,6 +522,12 @@ def main() -> int:
 
     docs = markdown_files(root)
     for path in docs:
+        try:
+            path.relative_to(skill_root / "assets")
+        except ValueError:
+            pass
+        else:
+            continue
         try:
             text = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:

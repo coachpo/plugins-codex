@@ -16,4 +16,6 @@ Included and adapted skill directories:
 The reference material, examples, and helper scripts retained under those
 directories remain under the upstream Apache-2.0 license. Each `SKILL.md` was
 rewritten for Codex's plugin namespace and a separately configured official
-Remote MCP, then updated on 2026-08-03 with GPT-5.6-oriented prompt contracts.
+Remote MCP, updated on 2026-08-03 with GPT-5.6-oriented prompt contracts, and
+refined on 2026-08-05 for current tool schemas, bounded recovery, evidence
+gates, and Codex skill UI metadata. The pinned upstream revision is unchanged.

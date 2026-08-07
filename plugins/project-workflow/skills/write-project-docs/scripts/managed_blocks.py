@@ -263,6 +263,60 @@ def visible_section_titles(text: str, section_titles: tuple[str, ...]) -> set[st
     }
 
 
+def visible_markdown_lines(text: str) -> tuple[str, ...]:
+    """Return source lines exposed by conservative Markdown block parsing."""
+
+    return tuple(line.text for line in _markdown_lines(text) if line.visible)
+
+
+def visible_atx_heading_positions(
+    text: str, level: int, title: str
+) -> tuple[int, ...]:
+    """Return source offsets for one visible ATX heading."""
+
+    return tuple(
+        line.start
+        for line in _markdown_lines(text)
+        if line.visible and _atx_heading(line.text) == (level, title)
+    )
+
+
+def visible_atx_headings(text: str) -> tuple[tuple[int, str, int], ...]:
+    """Return visible ATX headings as ``(level, title, offset)`` tuples."""
+
+    headings: list[tuple[int, str, int]] = []
+    for line in _markdown_lines(text):
+        if not line.visible:
+            continue
+        heading = _atx_heading(line.text)
+        if heading is not None:
+            headings.append((heading[0], heading[1], line.start))
+    return tuple(headings)
+
+
+def has_visible_h1_or_h2(text: str) -> bool:
+    """Return whether Markdown exposes an ATX or Setext H1/H2 heading."""
+
+    lines = _markdown_lines(text)
+    for index, line in enumerate(lines):
+        if not line.visible:
+            continue
+        heading = _atx_heading(line.text)
+        if heading is not None and heading[0] <= 2:
+            return True
+        indentation = len(line.text) - len(line.text.lstrip(" "))
+        candidate = line.text[indentation:]
+        if (
+            index > 0
+            and indentation <= 3
+            and re.fullmatch(r"(?:=+|-+)[ \t]*", candidate)
+        ):
+            previous = lines[index - 1]
+            if previous.visible and previous.text.strip(" \t"):
+                return True
+    return False
+
+
 def locate_visible_asset_block(
     text: str,
     asset: str,

@@ -1,0 +1,12 @@
+interface:
+  display_name: "Run Bounded Stitch Loop"
+  short_description: "以有界、可恢复且可人工评审的流程完成多屏 Stitch 设计"
+  default_prompt: "使用 $stitch-ui-ux-codex:stitch-loop 按批准的屏幕清单完成有界且可恢复的 Stitch 多屏流程。"
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "stitch"
+      description: "Official Google Stitch Remote MCP"
+      transport: "streamable_http"
+      url: "https://stitch.googleapis.com/mcp"

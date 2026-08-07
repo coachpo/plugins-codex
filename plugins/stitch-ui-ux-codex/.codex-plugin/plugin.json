@@ -1,6 +1,6 @@
 {
   "name": "stitch-ui-ux-codex",
-  "version": "0.1.1+codex.20260804082017",
+  "version": "0.2.0+codex.20260805201256",
   "description": "Design, review, iterate, and retrieve UI/UX deliverables with a separately configured official Google Stitch Remote MCP.",
   "author": {
     "name": "coachpo",
@@ -20,10 +20,10 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Stitch UI/UX for Codex",
-    "shortDescription": "UI/UX design and design-to-code with Stitch",
-    "longDescription": "Five Codex-adapted UI/UX skills orchestrate prompt refinement, Stitch screen generation and editing, design-system extraction, multi-page iteration, and React handoff through a separately configured official Google Stitch Remote MCP. The plugin bundles skills only and does not install an MCP server or handle credentials.",
+    "shortDescription": "Stitch UI design and React",
+    "longDescription": "Five GPT-5.6-oriented Codex skills handle prompt-only refinement, evidence-backed design-system extraction, authorized Stitch generation and editing, bounded recoverable multi-screen work, and architecture-preserving React handoff through a separately configured official Google Stitch Remote MCP. The plugin bundles skills only and does not install an MCP server or handle credentials.",
     "developerName": "CoachPo",
-    "category": "Design",
+    "category": "Creativity",
     "capabilities": [
       "Interactive",
       "Write"
