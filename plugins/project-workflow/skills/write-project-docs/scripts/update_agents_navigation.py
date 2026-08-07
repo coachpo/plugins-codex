@@ -16,15 +16,11 @@ from canonical_paths import (
 )
 from managed_blocks import (
     ManagedBlockError,
-    locate_managed_block,
     locate_visible_asset_block,
     visible_section_titles,
 )
 
 
-LEGACY_START_MARKER = "<!-- write-project-docs:document-navigation:start -->"
-LEGACY_END_MARKER = "<!-- write-project-docs:document-navigation:end -->"
-MANAGED_COMMENT_PREFIX = "<!-- write-project-docs:"
 SECTION_TITLES = ("项目文档导航", "项目文档内容边界")
 FIXED_PATH_MAPPINGS = (
     ("docs/INDEX.md", "docs/README.md"),
@@ -48,40 +44,6 @@ def parse_args() -> argparse.Namespace:
 
 def insert_or_replace_block(text: str, asset: str) -> tuple[str, str]:
     try:
-        legacy_span = locate_managed_block(
-            text,
-            LEGACY_START_MARKER,
-            LEGACY_END_MARKER,
-            "根 AGENTS.md 的遗留文档区块",
-        )
-    except ManagedBlockError as error:
-        raise ValueError(str(error)) from error
-
-    if legacy_span is not None:
-        without_legacy = (
-            text[: legacy_span.start] + "\n" + text[legacy_span.end :]
-        )
-        try:
-            existing_span = locate_visible_asset_block(
-                without_legacy,
-                asset,
-                SECTION_TITLES,
-                "根 AGENTS.md 的 marker 外文档区块",
-            )
-        except ManagedBlockError as error:
-            raise ValueError(str(error)) from error
-        if existing_span is not None or visible_section_titles(
-            without_legacy, SECTION_TITLES
-        ):
-            raise ValueError(
-                "根 AGENTS.md 同时包含遗留 marker 区块和无 marker 文档区块"
-            )
-        return (
-            text[: legacy_span.start] + asset + text[legacy_span.end :],
-            "replaced",
-        )
-
-    try:
         span = locate_visible_asset_block(
             text, asset, SECTION_TITLES, "根 AGENTS.md 的文档区块"
         )
@@ -92,7 +54,7 @@ def insert_or_replace_block(text: str, asset: str) -> tuple[str, str]:
         existing_titles = visible_section_titles(text, SECTION_TITLES)
         if existing_titles:
             titles = "、".join(f"## {title}" for title in sorted(existing_titles))
-            raise ValueError(f"根 AGENTS.md 的无 marker 文档区块已漂移：{titles}")
+            raise ValueError(f"根 AGENTS.md 的文档区块已漂移：{titles}")
         prefix = text
         newline = "\r\n" if "\r\n" in prefix else "\n"
         if prefix and not prefix.endswith(newline):
@@ -185,7 +147,6 @@ def main() -> int:
         or not asset.endswith("\n")
         or asset.endswith("\n\n")
         or "\r" in asset
-        or MANAGED_COMMENT_PREFIX in asset
     ):
         print("错误：AGENTS 文档区块 asset 格式无效")
         return 2
@@ -205,10 +166,6 @@ def main() -> int:
         )
     except ValueError as error:
         print(f"错误：{error}；未修改")
-        return 1
-
-    if MANAGED_COMMENT_PREFIX in updated:
-        print("错误：根 AGENTS.md 仍包含 write-project-docs HTML 边界注释；未修改")
         return 1
 
     if updated == original:
