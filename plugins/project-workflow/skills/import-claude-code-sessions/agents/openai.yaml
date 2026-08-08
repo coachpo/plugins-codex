@@ -1,0 +1,7 @@
+interface:
+  display_name: "Import Claude Code Sessions"
+  short_description: "通过官方流程将选定的 Claude Code 会话导入 Codex"
+  default_prompt: "使用 $project-workflow:import-claude-code-sessions 通过官方原生导入流程导入我选定的 Claude Code 会话，并在目标可打开后验证结果。"
+
+policy:
+  allow_implicit_invocation: false

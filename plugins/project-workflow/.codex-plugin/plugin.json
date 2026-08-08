@@ -1,7 +1,7 @@
 {
   "name": "project-workflow",
-  "version": "0.3.1+codex.20260807183129",
-  "description": "\u521d\u59cb\u5316\u4ed3\u5e93\u6307\u5f15\u3001\u7ef4\u62a4\u9879\u76ee\u6587\u6863\uff0c\u5e76\u628a\u5df2\u63a5\u53d7\u7684\u51b3\u5b9a\u6574\u7406\u4e3a\u53ef\u6267\u884c\u76ee\u6807\u3002",
+  "version": "0.4.0+codex.20260808100654",
+  "description": "\u5efa\u7acb\u4ed3\u5e93\u6307\u5f15\u3001\u7ef4\u62a4\u9879\u76ee\u6587\u6863\u4e0e\u5171\u8bc6 GOAL\uff0c\u5e76\u901a\u8fc7\u5b98\u65b9\u6d41\u7a0b\u5bfc\u5165 Claude Code \u4f1a\u8bdd\u3002",
   "author": {
     "name": "coachpo",
     "url": "https://github.com/coachpo"
@@ -13,14 +13,16 @@
     "agents-md",
     "documentation",
     "goals",
+    "claude-code",
+    "session-import",
     "project-workflow",
     "codex"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Project Workflow",
-    "shortDescription": "\u4ed3\u5e93\u77e5\u8bc6\u3001\u9879\u76ee\u6587\u6863\u4e0e\u5171\u8bc6\u76ee\u6807\u5de5\u4f5c\u6d41",
-    "longDescription": "\u57fa\u4e8e\u8bc1\u636e\u5efa\u7acb\u4f5c\u7528\u57df\u660e\u786e\u7684 AGENTS.md \u5c42\u7ea7\uff0c\u6807\u51c6\u5316\u9879\u76ee\u6587\u6863\uff0c\u5e76\u628a\u8ba8\u8bba\u4e2d\u5df2\u63a5\u53d7\u7684\u51b3\u5b9a\u6574\u7406\u4e3a GOAL \u8349\u7a3f\u6216\u6301\u4e45\u76ee\u6807\u3002",
+    "shortDescription": "\u4ed3\u5e93\u77e5\u8bc6\u3001\u9879\u76ee\u6587\u6863\u3001\u5171\u8bc6\u76ee\u6807\u4e0e Claude Code \u4f1a\u8bdd\u5bfc\u5165",
+    "longDescription": "\u57fa\u4e8e\u8bc1\u636e\u5efa\u7acb\u4f5c\u7528\u57df\u660e\u786e\u7684 AGENTS.md \u5c42\u7ea7\uff0c\u6807\u51c6\u5316\u9879\u76ee\u6587\u6863\uff0c\u628a\u5df2\u63a5\u53d7\u7684\u51b3\u5b9a\u6574\u7406\u4e3a\u53ef\u9a8c\u8bc1\u7684 GOAL\uff0c\u5e76\u901a\u8fc7 Codex \u539f\u751f\u6d41\u7a0b\u5bfc\u5165\u548c\u9a8c\u8bc1\u7528\u6237\u9009\u5b9a\u7684 Claude Code \u4f1a\u8bdd\u3002",
     "developerName": "CoachPo",
     "category": "Productivity",
     "capabilities": [
@@ -29,8 +31,8 @@
     ],
     "defaultPrompt": [
       "\u4f7f\u7528 $project-workflow:write-agent-guides \u57fa\u4e8e\u4ed3\u5e93\u8bc1\u636e\u7f16\u5199\u6216\u66f4\u65b0\u5f53\u524d\u4ed3\u5e93\u7684 AGENTS.md \u5c42\u7ea7\u3002",
-      "\u4f7f\u7528 $project-workflow:write-project-docs \u57fa\u4e8e\u4ed3\u5e93\u8bc1\u636e\u7ef4\u62a4\u5f53\u524d\u9879\u76ee\u7684\u4e2d\u6587\u6838\u5fc3\u6587\u6863\u3002",
-      "\u4f7f\u7528 $project-workflow:start-consensus-goal \u5c06\u5f53\u524d\u5171\u8bc6\u6574\u7406\u4e3a\u53ef\u9a8c\u8bc1\u7684\u4e2d\u6587 GOAL\uff0c\u5e76\u7acb\u5373\u542f\u52a8\u6301\u7eed\u6267\u884c\u3002"
+      "\u4f7f\u7528 $project-workflow:start-consensus-goal \u5c06\u5f53\u524d\u5171\u8bc6\u6574\u7406\u4e3a\u53ef\u9a8c\u8bc1\u7684\u4e2d\u6587 GOAL\uff0c\u5e76\u7acb\u5373\u542f\u52a8\u6301\u7eed\u6267\u884c\u3002",
+      "\u4f7f\u7528 $project-workflow:import-claude-code-sessions \u901a\u8fc7\u5b98\u65b9\u6d41\u7a0b\u5bfc\u5165\u5e76\u9a8c\u8bc1\u6211\u9009\u5b9a\u7684 Claude Code \u4f1a\u8bdd\u3002"
     ],
     "brandColor": "#1A73E8",
     "websiteURL": "https://github.com/coachpo/plugins-codex/tree/main/plugins/project-workflow"
